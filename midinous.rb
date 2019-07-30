@@ -48,38 +48,3 @@ ui::canvas.set_size_request(CANVAS_SIZE,CANVAS_SIZE)
 ui::grid_set(CANVAS_SIZE)
 
 Gtk.main
-
-=begin sample draw
-ui::canvas.signal_connect("draw") do |_widget, cr| #i think _widget means current widget.
-  # fill background with black
-  cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-  cr.paint
-
-  cr.set_source_rgba(1,1,1,1)
-  cr.circle(100,100,1)
-  cr.fill
-  
-  cr.set_source_rgba(1,1,1,0.5)
-  cr.circle(100,100,10)
-  cr.fill
-  
-  cr.set_source_rgba(1,1,1,1)
-  cr.circle(100,100,10)
-  cr.set_line_width(2)
-  cr.stroke
-
-  # create shape
-  cr.move_to(400, 1000)
-  cr.curve_to(100, 25, 100, 75, 150, 50)
-  cr.line_to(150, 0)
-  cr.line_to(50, 150)
-  cr.close_path
-
-  cr.set_source_rgba(0.5, 0.0, 0.2,0.5)
-  cr.fill_preserve
-  cr.set_source_rgba(0.6, 0.0, 0.2,1)
-  cr.set_line_join(Cairo::LINE_JOIN_MITER)
-  cr.set_line_width(2)
-  cr.stroke
-end
-=end
