@@ -70,21 +70,11 @@ class UI_Elements
 				cr.set_source_rgba(bg_blck)
 				cr.paint
 				cr.set_source_rgba(gr_gray)
-				
-				# generate the grid with a center point
+				#If needed, place a center point on the grid in the future at this point
 				x = grid_size
 				while x < canvas_size
 					y = grid_size
 					while y < canvas_size
-=begin
-						if y == (canvas_size/2) && x == (canvas_size/2)
-							cr.circle(x,y,5)
-							cr.fill
-						else
-							cr.circle(x,y,1)
-							cr.fill
-						end
-=end
 						cr.circle(x,y,1)
 						cr.fill
 						y += grid_size
@@ -117,3 +107,32 @@ class UI_Elements
 	end
 
 end
+
+class Tool
+	def initialize
+		@tool_id = 1
+	end
+	def set_tool(id)
+		@tool_id = id
+		case
+			when @tool_id == 1 
+				UI::main_tool_1.active = true 
+			when @tool_id == 2 
+				UI::main_tool_2.active = true 
+			when @tool_id == 3 
+				UI::main_tool_3.active = true 
+			when @tool_id == 4 
+				UI::main_tool_4.active = true 
+		end
+	end
+	def get_tool
+		return @tool_id
+	end
+	
+end
+
+GtkRadioButtonEx #Declare the new radio button definition to add functionality
+GtkCanvas        #Declare the new drawing area definition to add functionality
+UI = UI_Elements.new()  #Create a new UI_Elements object
+UI::build_ui
+Active_Tool = Tool.new
