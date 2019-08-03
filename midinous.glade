@@ -8,15 +8,47 @@
   </object>
   <object class="GtkAdjustment" id="canvas_scroll_h">
     <property name="upper">3000</property>
-    <property name="value">0</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
+    <object class="GtkImage" id="main_tool_img_1">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-zoom-fit</property>
+  </object>
+    <object class="GtkImage" id="main_tool_img_2">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-disconnect</property>
+  </object>
+    <object class="GtkImage" id="main_tool_img_3">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-sort-descending</property>
+  </object>
+    <object class="GtkImage" id="main_tool_img_4">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-convert</property>
+  </object>
   <object class="GtkAdjustment" id="canvas_scroll_v">
     <property name="upper">3000</property>
-    <property name="value">0</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
+  </object>
+  <object class="GtkListStore" id="point_properties">
+    <columns>
+      <!-- column-name Property -->
+      <column type="gchar"/>
+      <!-- column-name Value -->
+      <column type="gchar"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0">a</col>
+        <col id="1">1</col>
+      </row>
+    </data>
   </object>
   <object class="GtkApplicationWindow" id="midinous">
     <property name="name">midinous_main</property>
@@ -24,8 +56,8 @@
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Midinous</property>
     <property name="resizable">False</property>
-    <property name="default_width">1080</property>
-    <property name="default_height">720</property>
+    <property name="default_width">1920</property>
+    <property name="default_height">1080</property>
     <property name="icon_name">accessories-calculator-symbolic</property>
     <child>
       <placeholder/>
@@ -197,7 +229,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="orientation">vertical</property>
-            <property name="position">670</property>
+            <property name="position">1050</property>
             <property name="position_set">True</property>
             <property name="wide_handle">True</property>
             <child>
@@ -219,18 +251,21 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <child>
-                          <object class="GtkButtonBox">
+                          <object class="GtkButtonBox" id="logic_controls">
                             <property name="width_request">340</property>
                             <property name="height_request">31</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="layout_style">start</property>
                             <child>
-                              <object class="GtkToggleButton" id="loper_1">
-                                <property name="label" translatable="yes">logic 1</property>
+                              <object class="GtkRadioButtonEx" id="main_tool_1">
+                             <!--   <property name="label" translatable="yes">logic 1</property> -->
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="receives_default">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="active">True</property>
+                                <property name="draw_indicator">False</property>
+								<property name="image">main_tool_img_1</property>
                               </object>
                               <packing>
                                 <property name="expand">True</property>
@@ -239,11 +274,15 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkToggleButton" id="loper_2">
-                                <property name="label" translatable="yes">logic 2</property>
+                              <object class="GtkRadioButtonEx" id="main_tool_2">
+                               <!-- <property name="label" translatable="yes">logic 2</property> -->
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="receives_default">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="active">True</property>
+                                <property name="draw_indicator">False</property>
+                                <property name="group">main_tool_1</property>
+								<property name="image">main_tool_img_2</property>
                               </object>
                               <packing>
                                 <property name="expand">True</property>
@@ -252,11 +291,15 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkToggleButton" id="loper_3">
-                                <property name="label" translatable="yes">logic 3</property>
+                              <object class="GtkRadioButtonEx" id="main_tool_3">
+                                <!-- <property name="label" translatable="yes">logic 3</property> -->
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="receives_default">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="active">True</property>
+                                <property name="draw_indicator">False</property>
+                                <property name="group">main_tool_1</property>
+								<property name="image">main_tool_img_3</property>
                               </object>
                               <packing>
                                 <property name="expand">True</property>
@@ -265,11 +308,15 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkToggleButton" id="loper_4">
-                                <property name="label" translatable="yes">logic 4</property>
+                              <object class="GtkRadioButtonEx" id="main_tool_4">
+                               <!-- <property name="label" translatable="yes">logic 4</property> -->
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="receives_default">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="active">True</property>
+                                <property name="draw_indicator">False</property>
+                                <property name="group">main_tool_1</property>
+								<property name="image">main_tool_img_4</property>
                               </object>
                               <packing>
                                 <property name="expand">True</property>
@@ -353,20 +400,6 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkTextView">
-                                <property name="width_request">216</property>
-                                <property name="height_request">127</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="editable">False</property>
-                                <property name="cursor_visible">False</property>
-                                <property name="accepts_tab">False</property>
-                              </object>
-                              <packing>
-                                <property name="y">34</property>
-                              </packing>
-                            </child>
-                            <child>
                               <object class="GtkButton">
                                 <property name="label" translatable="yes">Apply</property>
                                 <property name="width_request">70</property>
@@ -386,7 +419,7 @@
                                 <property name="height_request">30</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="label" translatable="yes">Selected</property>
+                                <property name="label" translatable="yes">Point Properties</property>
                                 <attributes>
                                   <attribute name="size" value="200"/>
                                 </attributes>
@@ -406,6 +439,39 @@
                               <packing>
                                 <property name="x">222</property>
                                 <property name="y">118</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkTreeView" id="point_tree">
+                                <property name="width_request">212</property>
+                                <property name="height_request">131</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="model">point_properties</property>
+                                <property name="enable_grid_lines">horizontal</property>
+                                <child internal-child="selection">
+                                  <object class="GtkTreeSelection"/>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="x">2</property>
+                                <property name="y">28</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="width_request">130</property>
+                                <property name="height_request">28</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="label" translatable="yes">Modify Selected</property>
+                                <attributes>
+                                  <attribute name="size" value="200"/>
+                                </attributes>
+                              </object>
+                              <packing>
+                                <property name="x">226</property>
+                                <property name="y">89</property>
                               </packing>
                             </child>
                           </object>
@@ -440,7 +506,7 @@
                         <property name="hscroll_policy">natural</property>
                         <property name="vscroll_policy">natural</property>
                         <child>
-                          <object class="GtkDrawingArea" id="canvas">
+                          <object class="GtkCanvas" id="canvas">
                             <property name="visible">True</property>
                             <property name="app_paintable">True</property>
                             <property name="can_focus">True</property>
