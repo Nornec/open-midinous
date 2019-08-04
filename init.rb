@@ -14,6 +14,9 @@ class Init_Prog
 		UI::grid_set(CANVAS_SIZE,GRID_SPACING)
 		UI::canvas_h_adj.set_value(CANVAS_SIZE/3.1)
 		UI::canvas_v_adj.set_value(CANVAS_SIZE/2.4)
+		grid_center
+		initialize_provider
+		apply_style(UI::midinous,@provider)
 	end
 	
 	def grid_center #center the grid
@@ -21,10 +24,25 @@ class Init_Prog
 		UI::canvas_v_adj.set_value(CANVAS_SIZE/2.4)
 	end
 	
+	def apply_style(widget, provider)
+    style_context = widget.style_context
+    style_context.add_provider(provider, Gtk::StyleProvider::PRIORITY_USER)
+    return unless widget.respond_to?(:children)
+    widget.children.each do |child|
+      apply_style(child, provider)
+    end
+  end
+	
+	def initialize_provider
+		css_file = "./midinous_themes.css"
+    @provider = Gtk::CssProvider.new
+    @provider.load_from_path(css_file)
+  end
+	
 end
 
 init = Init_Prog.new
-init.grid_center # Setting Grid Center here ensures the background always gets drawn first
+#init.grid_center # Setting Grid Center here ensures the background always gets drawn first
 
 module Event_Router
 	extend Key_Bindings

@@ -39,6 +39,10 @@ class UI_Elements
 		def canvas_v_adj
 			@builder.get_object("canvas_scroll_v")
 		end
+		
+		def fixed_test
+			@builder.get_object("fixed_test")
+		end
 
 		def main_tool_1
 			@builder.get_object("main_tool_1")

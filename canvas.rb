@@ -15,13 +15,13 @@ class Canvas_Control
 	end
 
 	def canvas_press(event)
-		case
-			when Active_Tool.get_tool == 1
+		case Active_Tool.get_tool
+			when 1
 				@sel_box   = [event.x,event.y,event.x,event.y]
 				@selecting   = true
-			when Active_Tool.get_tool == 2
+			when 2
 				@pointOrigin = [event.x,event.y]
-			when Active_Tool.get_tool == 3
+			when 3
 				@pointMove = [event.x,event.y,event.x,event.y]
 		end
 	end
@@ -45,18 +45,18 @@ class Canvas_Control
 	end
 	
 	def canvas_release(obj,event)
-		case
-			when Active_Tool.get_tool == 1
+		case Active_Tool.get_tool
+			when 1
 				@sel_box = pos_box(@sel_box)
 				@nouspoints = Pl.select_points(@sel_box,@nouspoints)
 				@sel_box = nil
 				@selecting = false
 				obj.queue_draw
-			when Active_Tool.get_tool == 2 #Add a point where/when the tool is released
+			when 2 #Add a point where/when the tool is released
 				@nouspoints = Pl.add_point(round_to_grid(@pointOrigin),@nouspoints)
 				@pointOrigin = nil
 				obj.queue_draw
-			when Active_Tool.get_tool == 3 #move point(s) designated by the move stencil
+			when 3 #move point(s) designated by the move stencil
 				@nouspoints = Pl.move_points(@diff,@nouspoints)
 				@pointMove = nil
 				obj.queue_draw

@@ -2,7 +2,7 @@
 <!-- Generated with glade 3.22.1 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
-  <!-- interface-css-provider-path midinous_themes.css -->
+	<!-- interface-css-provider-path ./midinous_themes.css --> 
   <object class="GtkTextBuffer" id="Status Text Here - Program Running Normally">
     <property name="text" translatable="yes">Status Text Here - Program Running Normally</property>
   </object>
@@ -247,7 +247,7 @@
                     <property name="position_set">True</property>
                     <property name="wide_handle">True</property>
                     <child>
-                      <object class="GtkFixed">
+                      <object class="GtkFixed" id="fixed-test">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <child>
@@ -265,7 +265,7 @@
                                 <property name="receives_default">False</property>
                                 <property name="active">True</property>
                                 <property name="draw_indicator">False</property>
-								<property name="image">main_tool_img_1</property>
+																<property name="image">main_tool_img_1</property>
                               </object>
                               <packing>
                                 <property name="expand">True</property>
@@ -282,7 +282,7 @@
                                 <property name="active">True</property>
                                 <property name="draw_indicator">False</property>
                                 <property name="group">main_tool_1</property>
-								<property name="image">main_tool_img_2</property>
+																<property name="image">main_tool_img_2</property>
                               </object>
                               <packing>
                                 <property name="expand">True</property>
@@ -299,8 +299,8 @@
                                 <property name="active">True</property>
                                 <property name="draw_indicator">False</property>
                                 <property name="group">main_tool_1</property>
-								<property name="image">main_tool_img_3</property>
-                              </object>
+																<property name="image">main_tool_img_3</property>
+															</object>
                               <packing>
                                 <property name="expand">True</property>
                                 <property name="fill">True</property>
@@ -316,7 +316,7 @@
                                 <property name="active">True</property>
                                 <property name="draw_indicator">False</property>
                                 <property name="group">main_tool_1</property>
-								<property name="image">main_tool_img_4</property>
+																<property name="image">main_tool_img_4</property>
                               </object>
                               <packing>
                                 <property name="expand">True</property>

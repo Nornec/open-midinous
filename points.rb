@@ -48,14 +48,7 @@ class Point_Logic
 end
 
 class NousPoint
-	@x          = 0
-	@y          = 0
-	@x_store    = 0
-	@y_store    = 0
-	@color      = []
-	@ring_color = []
-	@region     = -1
-	
+
 	class NousPath
 		#Work on paths after points are movable
 	end
@@ -83,17 +76,11 @@ class NousPoint
 	end
 	
 	def is_selected
-		if @selected == true
-			return true
-		else return false
-		end
+		@selected
 	end
 	
 	def is_not_selected
-		if @selected == false
-			return true
-		else return false
-		end
+		!is_selected
 	end
 	
 	def get_bounds
