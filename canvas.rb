@@ -2,16 +2,19 @@ require_relative "points"
 
 class Canvas_Control
 	include Logic_Controls 
-
+	
 	def initialize
 		@sel_box     = nil
 		@selecting   = false
 		@sel_white   = [0.8,0.8,0.8,0.1] 	#selection box colors
 		@sel_blue    = [0,0.5,1,0.5]      #selection box colors
 		@pointOrigin = nil
+		@pathOrigin  = nil
 		@pointMove   = nil
 		@diff        = []
-		@nouspoints  = [] 
+		@nouspoints  = []
+		@nouspaths   = []
+		@pathSourced = false
 	end
 
 	def canvas_press(event)
@@ -23,6 +26,8 @@ class Canvas_Control
 				@pointOrigin = [event.x,event.y]
 			when 3
 				@pointMove = [event.x,event.y,event.x,event.y]
+			when 4
+				@pathOrigin = [event.x,event.y]
 		end
 	end
 
@@ -60,6 +65,9 @@ class Canvas_Control
 				@nouspoints = Pl.move_points(@diff,@nouspoints)
 				@pointMove = nil
 				obj.queue_draw
+			when 4 #select singular point
+				@nouspoints, @pathSourced = Pl.select_path_point(@pathOrigin,@nouspoints,@pathSourced)
+				obj.queue_draw
 		end
 	end
 	
@@ -96,9 +104,23 @@ class Canvas_Control
 				cr.set_line_width(2)
 				cr.stroke
 		end
-
+		
+		#Set the scene if the current tool doesn't permit a style
+		
+		case Active_Tool.get_tool
+			when 1
+				@nouspoints, @pathSourced = Pl.cancel_path(@nouspoints)
+			when 2
+				@nouspoints, @pathSourced = Pl.cancel_path(@nouspoints)
+			when 3
+				@nouspoints, @pathSourced = Pl.cancel_path(@nouspoints)
+			when 4
+				@nouspoints = Pl.cancel_selected(@nouspoints)
+		end
+	
 		#Draw all the points last
 		@nouspoints.each { |n| n.draw(cr) }
+
 	end
 	
 end

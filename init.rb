@@ -53,11 +53,13 @@ module Event_Router
 	UI::main_tool_2.signal_connect("keybinding-event")   {Active_Tool.set_tool(2)}
 	UI::main_tool_3.signal_connect("keybinding-event")   {Active_Tool.set_tool(3)}
 	UI::main_tool_4.signal_connect("keybinding-event")   {Active_Tool.set_tool(4)}
-	#For clicks                                                        
-	UI::main_tool_1.signal_connect("button-press-event") {Active_Tool.set_tool(1)}
-	UI::main_tool_2.signal_connect("button-press-event") {Active_Tool.set_tool(2)}
-	UI::main_tool_3.signal_connect("button-press-event") {Active_Tool.set_tool(3)}
-	UI::main_tool_4.signal_connect("button-press-event") {Active_Tool.set_tool(4)}
+	UI::path_builder.signal_connect("keybinding-event")  {puts "hello"}
+	#For clicks
+	UI::main_tool_1.signal_connect("button-press-event")  {Active_Tool.set_tool(1)}
+	UI::main_tool_2.signal_connect("button-press-event")  {Active_Tool.set_tool(2)}
+	UI::main_tool_3.signal_connect("button-press-event")  {Active_Tool.set_tool(3)}
+	UI::main_tool_4.signal_connect("button-press-event")  {Active_Tool.set_tool(4)}
+	UI::path_builder.signal_connect("button-press-event") {puts "hello"}
 	#Canvas Events
 	UI::canvas.signal_connect("delete-selected-event") {              CC.canvas_del                }
 	UI::canvas.signal_connect("button-press-event")    { |obj, event| CC.canvas_press(event)       }

@@ -5,6 +5,13 @@ class GtkRadioButtonEx < Gtk::RadioButton
 	end
 	define_signal('keybinding-event',nil,nil,nil)
 end
+class GtkButtonEx < Gtk::Button
+	type_register
+	def initialize
+		super()
+	end
+	define_signal('keybinding-event',nil,nil,nil)
+end
 class GtkCanvas < Gtk::DrawingArea
 	type_register
 	def initialize
@@ -56,6 +63,11 @@ class UI_Elements
 		def main_tool_4
 			@builder.get_object("main_tool_4")
 		end
+		
+		def path_builder
+			@builder.get_object("path-builder")
+		end
+		
 		canvas.add_events("button-press-mask")
 		canvas.add_events("button-release-mask")
 		canvas.add_events("pointer-motion-mask")
@@ -119,24 +131,30 @@ class Tool
 	def set_tool(id)
 		@tool_id = id
 		case
-			when @tool_id == 1 
-				UI::main_tool_1.active = true 
+			when @tool_id == 1
+				UI::main_tool_1.active = true
+				UI::canvas.queue_draw
 			when @tool_id == 2 
-				UI::main_tool_2.active = true 
+				UI::main_tool_2.active = true
+				UI::canvas.queue_draw
 			when @tool_id == 3 
 				UI::main_tool_3.active = true 
+				UI::canvas.queue_draw
 			when @tool_id == 4 
 				UI::main_tool_4.active = true 
+				UI::canvas.queue_draw
 		end
 	end
+	
 	def get_tool
 		return @tool_id
 	end
-	
+
 end
 
 GtkRadioButtonEx #Declare the new radio button definition to add functionality
-GtkCanvas        #Declare the new drawing area definition to add functionality
+GtkButtonEx      #Declare the new button
+GtkCanvas        #Declare the new drawing area
 UI = UI_Elements.new()  #Create a new UI_Elements object
 UI::build_ui
 Active_Tool = Tool.new
