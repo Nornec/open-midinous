@@ -82,6 +82,7 @@ class NousPoint
 		@x = origin[0]
 		@y = origin[1]
 		@color          = GREY #point color defaults to gray
+		@default_color  = GREY
 		@pathable       = false
 		@selected       = false
 		@path_buffer    = []
@@ -146,7 +147,7 @@ class NousPoint
 	def depathable
 		@pathable = false
 		@source = false
-		set_color(GREY)
+		set_color(@default_color)
 	end
 	
 	def set_destination(diff_coord) #sets a new origin for the point based on x,y coordinate differences
@@ -155,7 +156,11 @@ class NousPoint
 	end
 	
 	def set_color(color) #modifies the color of the point, input is a 4-value array
-		@color      = color
+		@color = color
+	end
+	def set_default_color(color)
+		@color = color
+		@default_color = color
 	end
 	
 	def selected   #elevate color to denote 'selected' and sets a flag
@@ -165,9 +170,9 @@ class NousPoint
 	
 	def deselected #resets the color from elevated 'selected' values and sets a flag
 		@selected = false
-		set_color(GREY)
+		set_color(@default_color)
 	end
-	
+
 	def plan_move(diff) #Plan the move to a new point using x,y relative coordinates
 		dest = get_origin
 		dest[0] += diff[0]

@@ -7,6 +7,7 @@ widget text/foreground color */
 /*
 text color for entries, views and content in general */
 @define-color theme_text_color #d3d8e5;
+/*@define-color theme_text_color #ffffff;*/
 /*
 widget base background color */
 @define-color theme_bg_color #282c34;
@@ -247,7 +248,7 @@ entry selection, row:selected, .sidebar:selected {
   textview text:backdrop:selected:focus, .view text:backdrop:selected,
   textview text:backdrop:selected,
   .view:backdrop:selected, .view text selection:backdrop,
-  textview text selection:backdrop, flowbox flowboxchild:backdrop:selected, label:backdrop selction, spinbutton:not(.vertical) selection:backdrop:focus, spinbutton:not(.vertical) selection:backdrop,
+  textview text selection:backdrop, flowbox flowboxchild:backdrop:selected, label:backdrop selection, spinbutton:not(.vertical) selection:backdrop:focus, spinbutton:not(.vertical) selection:backdrop,
   entry selection:backdrop, row:backdrop:selected, .sidebar:backdrop:selected {
     background-color: rgba(81, 145, 224, 0.5);
     color: #3d424c; }
@@ -3738,6 +3739,7 @@ tooltip * {
 /**************
  * Tree Views *
  **************/
+ 
 treeview.view {
   -GtkTreeView-grid-line-width: 0;
   -GtkTreeView-grid-line-pattern: '';

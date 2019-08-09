@@ -24,13 +24,16 @@ class UI_Elements
 	# Construct a Gtk::Builder instance and load our UI description
 	def build_ui
 		builder_file = "./midinous.glade"
+		
 		# Connect signal handlers to the constructed widgets
 		@builder = Gtk::Builder.new(:file => builder_file)
 
+		#Main window
 		def midinous 
 			@builder.get_object("midinous")
 		end
-		midinous.add_events("key-press-mask")
+
+		#Drawing Area
 		def canvas
 			@builder.get_object("canvas")
 		end
@@ -40,6 +43,8 @@ class UI_Elements
 		def canvas_scroll_window
 			@builder.get_object("canvas_scroll_window")
 		end
+		
+		#Adjustments
 		def canvas_h_adj
 			@builder.get_object("canvas_scroll_h")
 		end
@@ -47,10 +52,7 @@ class UI_Elements
 			@builder.get_object("canvas_scroll_v")
 		end
 		
-		def fixed_test
-			@builder.get_object("fixed_test")
-		end
-
+		#Buttons
 		def main_tool_1
 			@builder.get_object("main_tool_1")
 		end		
@@ -63,14 +65,79 @@ class UI_Elements
 		def main_tool_4
 			@builder.get_object("main_tool_4")
 		end
-		
 		def path_builder
-			@builder.get_object("path-builder")
+			@builder.get_object("path_builder")
 		end
 		
+		#Text Areas
+		def tool_descrip
+			@builder.get_object("tool_descrip")
+		end
+		
+		def status_area
+			@builder.get_object("status_area")
+		end
+		
+		#Labels
+		def perf_label
+			@builder.get_object("perf_label")
+		end		
+		def tool_label
+			@builder.get_object("tool_label")
+		end
+		def tempo_label
+			@builder.get_object("tempo_label")
+		end
+		def property_label
+			@builder.get_object("property_label")
+		end		
+		def modify_label
+			@builder.get_object("modify_label")
+		end
+		
+		#Point Property Tree
+		def point_list_model
+			@builder.get_object("point_list_model")
+		end
+		def point_list
+			@builder.get_object("point_list")
+		end
+		def point_list_col1
+			@builder.get_object("point_list_col1")
+		end
+		def point_list_col2
+			@builder.get_object("point_list_col2")
+		end
+
+  #test lifecycle of the point list
+=begin
+		data1 = ["Position","Color","Paths"]
+		data2 = ["-100,200","#0547FF",nil]
+		
+		data1.length.times do |v|
+			iter = point_list_model.append
+			iter[0] = data1[v]
+			iter[1] = data2[v]
+		end
+		#point_list_model.clear
+=end
+		
+		#Initialize the elements of the screen
+		midinous.add_events("key-press-mask")
 		canvas.add_events("button-press-mask")
 		canvas.add_events("button-release-mask")
 		canvas.add_events("pointer-motion-mask")
+		
+		path_builder.sensitive = false
+		
+		tool_descrip.text = "Select"
+		
+		perf_label.markup       = "<b>#{perf_label.text}</b>"
+		tempo_label.markup      = "<b>#{tempo_label.text}</b>"
+		tool_label.markup       = "<b>#{tool_label.text}</b>"
+		property_label.markup   = "<b>#{property_label.text}</b>"
+		modify_label.markup     = "<b>#{modify_label.text}</b>"
+		
 		#canvas.add_events(Gdk::EventMask::BUTTON_PRESS_MASK.nick)
 	end
 	
@@ -133,15 +200,23 @@ class Tool
 		case
 			when @tool_id == 1
 				UI::main_tool_1.active = true
+				UI::path_builder.sensitive = false
+				UI::tool_descrip.text = "Select"
 				UI::canvas.queue_draw
 			when @tool_id == 2 
 				UI::main_tool_2.active = true
+				UI::path_builder.sensitive = false
+				UI::tool_descrip.text = "Place"
 				UI::canvas.queue_draw
 			when @tool_id == 3 
 				UI::main_tool_3.active = true 
+				UI::path_builder.sensitive = false
+				UI::tool_descrip.text = "Move"
 				UI::canvas.queue_draw
 			when @tool_id == 4 
-				UI::main_tool_4.active = true 
+				UI::main_tool_4.active = true
+				UI::path_builder.sensitive = true
+				UI::tool_descrip.text = "Path"
 				UI::canvas.queue_draw
 		end
 	end
