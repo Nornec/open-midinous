@@ -4,17 +4,18 @@ class Canvas_Control
 	include Logic_Controls 
 	
 	def initialize
-		@sel_box     = nil
-		@selecting   = false
-		@sel_white   = [0.8,0.8,0.8,0.1] 	#selection box colors
-		@sel_blue    = [0,0.5,1,0.5]      #selection box colors
-		@pointOrigin = nil
-		@pathOrigin  = nil
-		@pointMove   = nil
-		@diff        = []
-		@nouspoints  = []
-		@nouspaths   = []
-		@pathSourced = false
+
+		@sel_box      = nil
+		@selecting    = false
+		@sel_white    = [0.8,0.8,0.8,0.1] 	#selection box colors
+		@sel_blue     = [0,0.5,1,0.5]      #selection box colors
+		@pointOrigin  = nil
+		@pathOrigin   = nil
+		@pointMove    = nil
+		@diff         = [0,0]
+		@nouspoints   = []
+		@pathSourced  = false
+		@attempt_path = false
 	end
 
 	def canvas_press(event)
@@ -30,7 +31,15 @@ class Canvas_Control
 				@pathOrigin = [event.x,event.y]
 		end
 	end
-
+	
+	def canvas_generic(string) #Used as a pseudo-handler between classes
+		if string == "path" && !@nouspoints.empty? && @nouspoints.find_all(&:pathable).any?
+			@nouspoints = Pl.add_path(@nouspoints)
+			@nouspoints, @pathSourced = Pl.cancel_path(@nouspoints)
+			UI::canvas.queue_draw
+		end
+	end
+	
 	def canvas_drag(obj,event)
 		case
 			when (@selecting && @sel_box)
@@ -64,6 +73,7 @@ class Canvas_Control
 			when 3 #move point(s) designated by the move stencil
 				@nouspoints = Pl.move_points(@diff,@nouspoints)
 				@pointMove = nil
+				@diff = [0,0]
 				obj.queue_draw
 			when 4 #select singular point
 				@nouspoints, @pathSourced = Pl.select_path_point(@pathOrigin,@nouspoints,@pathSourced)
@@ -106,7 +116,6 @@ class Canvas_Control
 		end
 		
 		#Set the scene if the current tool doesn't permit a style
-		
 		case Active_Tool.get_tool
 			when 1
 				@nouspoints, @pathSourced = Pl.cancel_path(@nouspoints)
@@ -118,8 +127,12 @@ class Canvas_Control
 				@nouspoints = Pl.cancel_selected(@nouspoints)
 		end
 	
-		#Draw all the points last
-		@nouspoints.each { |n| n.draw(cr) }
+		#Draw all the points and paths last
+		#Paths are behind points, so draw them first
+		@nouspoints.each        { |n| n.path_draw(cr) }
+		@nouspoints.each        { |n| n.draw(cr) }
+
+
 
 	end
 	

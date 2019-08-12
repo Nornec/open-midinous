@@ -1,5 +1,6 @@
 require "midi"
 require "gtk3"
+require "matrix"
 require_relative "init"
 require_relative "proc_midi"
 #require_relative "debug"

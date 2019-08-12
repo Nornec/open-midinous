@@ -3796,6 +3796,13 @@ treeview.view {
         color: #3d424c; }
     treeview.view.expander:backdrop {
       color: #3d424c; }
+	treeview.view header {
+		color: #d3d8e5;
+		background-image: none;
+		background-color: #404754;
+		text-shadow: none;
+		box-shadow: none;
+	}
   treeview.view header button {
     color: #d3d8e5;
     background-color: #404754;

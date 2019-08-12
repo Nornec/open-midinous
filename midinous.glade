@@ -188,7 +188,7 @@
                 <child>
                   <object class="GtkRadioButtonEx" id="main_tool_1">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
+                    <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
                     <property name="image">main_tool_img_1</property>
                     <property name="active">True</property>
@@ -203,7 +203,7 @@
                 <child>
                   <object class="GtkRadioButtonEx" id="main_tool_2">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
+                    <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
                     <property name="image">main_tool_img_2</property>
                     <property name="active">True</property>
@@ -219,7 +219,7 @@
                 <child>
                   <object class="GtkRadioButtonEx" id="main_tool_3">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
+                    <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
                     <property name="image">main_tool_img_3</property>
                     <property name="active">True</property>
@@ -235,7 +235,7 @@
                 <child>
                   <object class="GtkRadioButtonEx" id="main_tool_4">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
+                    <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
                     <property name="image">main_tool_img_4</property>
                     <property name="active">True</property>
@@ -260,7 +260,7 @@
                 <property name="width_request">180</property>
                 <property name="height_request">20</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
+                <property name="can_focus">False</property>
                 <property name="receives_default">True</property>
               </object>
               <packing>
@@ -279,7 +279,7 @@
                   <object class="GtkButton">
                     <property name="label" translatable="yes">Stop</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
+                    <property name="can_focus">False</property>
                     <property name="receives_default">True</property>
                   </object>
                   <packing>
@@ -292,7 +292,7 @@
                   <object class="GtkButton">
                     <property name="label" translatable="yes">Play</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
+                    <property name="can_focus">False</property>
                     <property name="receives_default">True</property>
                   </object>
                   <packing>
@@ -305,7 +305,7 @@
                   <object class="GtkButton">
                     <property name="label" translatable="yes">Backtrack</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
+                    <property name="can_focus">False</property>
                     <property name="receives_default">True</property>
                   </object>
                   <packing>
@@ -318,7 +318,7 @@
                   <object class="GtkButton">
                     <property name="label" translatable="yes">Advance</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
+                    <property name="can_focus">False</property>
                     <property name="receives_default">True</property>
                   </object>
                   <packing>
@@ -421,7 +421,7 @@
 															<object class="GtkTreeSelection" id="point_list_selector"/>
 														</child>
 														<child>
-															<object class="GtkTreeViewColumn">
+															<object class="GtkTreeViewColumn" id="point_list_col1_h">
 																<property name="resizable">True</property>
 																<property name="min_width">100</property>
 																<property name="title" translatable="yes">Property</property>
@@ -439,7 +439,7 @@
 															</object>
 														</child>
 														<child>
-															<object class="GtkTreeViewColumn">
+															<object class="GtkTreeViewColumn" id="point_list_col2_h">
 																<property name="resizable">True</property>
 																<property name="title" translatable="yes">Value</property>
 																<property name="sort_column_id">1</property>
@@ -485,7 +485,7 @@
                     <property name="width_request">70</property>
                     <property name="height_request">67</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
+                    <property name="can_focus">False</property>
                     <property name="receives_default">True</property>
                   </object>
                   <packing>

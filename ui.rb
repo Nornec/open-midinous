@@ -98,10 +98,19 @@ class UI_Elements
 		#Point Property Tree
 		def point_list_model
 			@builder.get_object("point_list_model")
+		end	
+		def point_list_view
+			@builder.get_object("point_list_view")
 		end
 		def point_list
 			@builder.get_object("point_list")
 		end
+		def point_list_col1_h
+			@builder.get_object("point_list_col1_h")
+		end
+		def point_list_col2_h
+			@builder.get_object("point_list_col2_h")
+		end	
 		def point_list_col1
 			@builder.get_object("point_list_col1")
 		end
