@@ -22,14 +22,27 @@ class Point_Logic
 	
 	def select_points(box,points) #Select points with the select tool
 		box_origin = [box[0],box[1]] #box is an array with 4 values
+		prop_names = ["X-coordinate","Y-coordinate","Color","Path Mode"]
 		points.each do |n|
 			if check_bounds(n.origin,box)
 					 n.select
 			elsif check_bounds(box_origin,n.bounds)
 					 n.select
-			else n.deselect
+			else 
+				n.deselect
+				UI::point_list_model.clear
 			end
 		end
+		
+		if points.find_all(&:selected).length == 1
+			prop_vals  = points.find(&:selected).properties
+			prop_names.each	do |v|
+				iter = UI::point_list_model.append
+				iter[0] = v
+				iter[1] = prop_vals[prop_names.find_index(v)].to_s
+			end
+		end
+
 		return points
 	end
 	
@@ -50,6 +63,7 @@ class Point_Logic
 	
 	def cancel_selected(points)
 		points.find_all(&:selected).each { |n| n.deselect }
+		UI::point_list_model.clear
 		return points
 	end
 	def cancel_path(points)
@@ -60,7 +74,9 @@ class Point_Logic
 	def delete_points(points)
 		return if points.length.zero?
 		points.find_all {|f| !f.path_to.length.zero?}.each {|n| n.path_to.reject!(&:selected)}
+		points.find_all {|f| !f.path_from.length.zero?}.each {|n| n.path_from.reject!(&:selected)}
 		points.reject!(&:selected)
+		UI::point_list_model.clear
 		return points
 	end
 	
@@ -83,7 +99,7 @@ class Point_Logic
 end
 
 class NousPoint
-	attr_accessor :source, :color, :path_to, :path_from
+	attr_accessor :source, :color, :path_to, :path_from, :properties
 	attr_reader :selected, :pathable, :origin, :bounds, :x, :y
 	
 	def initialize(o) #where the point was initially placed
@@ -100,6 +116,7 @@ class NousPoint
 		@path_to        = [] #array of references to points that are receiving a path from this point
 		@path_from      = [] #array of references to points that are sending   a path to   this point
 		@draw_mode      = "horz"
+		@properties = [@x,@y,@default_color,@draw_mode]
 	end
 
 	def not_selected
@@ -170,14 +187,23 @@ class NousPoint
 		@path_to.each   {|t| trace_path_to(cr,t)}
 		cr.set_line_width(6)
 		cr.stroke
-		
-		cr.set_source_rgba(0,0,0,0.4) if !@selected
-		cr.set_source_rgba(@path_color[0],@path_color[1],@path_color[2],0.4) if @selected
-		@path_to.each   {|t| trace_path_to(cr,t)}
-		@path_from.each {|s| trace_path_from(cr,s)} if @selected
-		cr.set_line_width(3)
-		cr.stroke
+		if !@selected
+			@path_to.each   {|t| trace_path_to(cr,t)}
+			cr.set_source_rgba(0,0,0,0.4)
+			cr.set_line_width(3)
+			cr.stroke
+		elsif @selected
+			cr.set_source_rgba(ORNGE[0],ORNGE[1],ORNGE[2],0.4)
+			@path_from.each {|s| trace_path_from(cr,s)}
+			cr.set_line_width(3)
+			cr.stroke
+			cr.set_source_rgba(@path_color[0],@path_color[1],@path_color[2],0.4) if @selected
+			@path_to.each   {|t| trace_path_to(cr,t)}
+			cr.set_line_width(3)
+			cr.stroke
+		end
 	end
+
 	def trace_path_to(cr,t)
 		case @draw_mode
 		when "horz"

@@ -68,14 +68,20 @@ class UI_Elements
 		def path_builder
 			@builder.get_object("path_builder")
 		end
+		#Button Areas
+		def logic_controls
+			@builder.get_object("logic_controls")
+		end
 		
 		#Text Areas
 		def tool_descrip
 			@builder.get_object("tool_descrip")
 		end
-		
 		def status_area
 			@builder.get_object("status_area")
+		end
+		def prop_mod
+			@builder.get_object("prop_mod")
 		end
 		
 		#Labels
@@ -117,19 +123,6 @@ class UI_Elements
 		def point_list_col2
 			@builder.get_object("point_list_col2")
 		end
-
-  #test lifecycle of the point list
-=begin
-		data1 = ["Position","Color","Paths"]
-		data2 = ["-100,200","#0547FF",nil]
-		
-		data1.length.times do |v|
-			iter = point_list_model.append
-			iter[0] = data1[v]
-			iter[1] = data2[v]
-		end
-		#point_list_model.clear
-=end
 		
 		#Initialize the elements of the screen
 		midinous.add_events("key-press-mask")

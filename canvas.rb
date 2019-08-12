@@ -132,8 +132,6 @@ class Canvas_Control
 		@nouspoints.each        { |n| n.path_draw(cr) }
 		@nouspoints.each        { |n| n.draw(cr) }
 
-
-
 	end
 	
 end

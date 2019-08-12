@@ -77,6 +77,10 @@ these are pretty self explicative */
   -GtkDialog-action-area-border: 0;
   outline-width: 0px; }
 
+*:focus{
+	border: 4px;
+	border-color: #ffffff;}
+
 /***************
  * Base States *
  ***************/

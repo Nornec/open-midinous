@@ -183,7 +183,7 @@
                 <property name="width_request">183</property>
                 <property name="height_request">25</property>
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can_focus">True</property>
                 <property name="layout_style">start</property>
                 <child>
                   <object class="GtkRadioButtonEx" id="main_tool_1">
@@ -390,7 +390,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="prop_mod">
                     <property name="width_request">168</property>
                     <property name="height_request">34</property>
                     <property name="visible">True</property>
@@ -406,7 +406,7 @@
 										<property name="width_request">252</property>
 										<property name="height_request">271</property>
 										<property name="visible">True</property>
-										<property name="can_focus">True</property>
+										<property name="can_focus">False</property>
 										<property name="shadow_type">in</property>
 										<child>
 											<object class="GtkViewport" id="point_list_view">
@@ -511,7 +511,7 @@
                 </child>
                 <child>
                   <object class="GtkSpinButton">
-                    <property name="width_request">170</property>
+                    <property name="width_request">180</property>
                     <property name="height_request">34</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
@@ -549,7 +549,7 @@
                 <property name="width_request">1761</property>
                 <property name="height_request">22</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
+                <property name="can_focus">False</property>
                 <property name="pixels_above_lines">4</property>
                 <property name="editable">False</property>
                 <property name="cursor_visible">False</property>
@@ -606,7 +606,7 @@
                   <object class="GtkCanvas" id="canvas">
                     <property name="visible">True</property>
                     <property name="app_paintable">True</property>
-                    <property name="can_focus">True</property>
+                    <property name="can_focus">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                   </object>
