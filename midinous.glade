@@ -418,7 +418,7 @@
 														<property name="can_focus">True</property>
 														<property name="model">point_list_model</property>
 														<child internal-child="selection">
-															<object class="GtkTreeSelection" id="point_list_selector"/>
+															<object class="GtkTreeSelection" id="point_list_selection"/>
 														</child>
 														<child>
 															<object class="GtkTreeViewColumn" id="point_list_col1_h">
@@ -480,7 +480,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton">
+                  <object class="GtkButton" id="prop_mod_button">
                     <property name="label" translatable="yes">Apply</property>
                     <property name="width_request">70</property>
                     <property name="height_request">67</property>

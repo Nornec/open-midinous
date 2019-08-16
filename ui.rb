@@ -51,6 +51,9 @@ class UI_Elements
 		def canvas_v_adj
 			@builder.get_object("canvas_scroll_v")
 		end
+		def tempo_adj
+			@builder.get_object("tempo_adj")
+		end
 		
 		#Buttons
 		def main_tool_1
@@ -68,6 +71,10 @@ class UI_Elements
 		def path_builder
 			@builder.get_object("path_builder")
 		end
+		def prop_mod_button
+			@builder.get_object("prop_mod_button")
+		end
+		
 		#Button Areas
 		def logic_controls
 			@builder.get_object("logic_controls")
@@ -123,14 +130,20 @@ class UI_Elements
 		def point_list_col2
 			@builder.get_object("point_list_col2")
 		end
+		def point_list_selection
+			@builder.get_object("point_list_selection")
+		end
+		
 		
 		#Initialize the elements of the screen
 		midinous.add_events("key-press-mask")
 		canvas.add_events("button-press-mask")
 		canvas.add_events("button-release-mask")
 		canvas.add_events("pointer-motion-mask")
+		prop_mod.add_events("key-press-mask")
 		
 		path_builder.sensitive = false
+		prop_mod_button.sensitive = false
 		
 		tool_descrip.text = "Select"
 		
@@ -199,20 +212,20 @@ class Tool
 	end
 	def set_tool(id)
 		@tool_id = id
+		unless @tool_id == 4 
+			UI::path_builder.sensitive = false
+		end
 		case
 			when @tool_id == 1
 				UI::main_tool_1.active = true
-				UI::path_builder.sensitive = false
 				UI::tool_descrip.text = "Select"
 				UI::canvas.queue_draw
 			when @tool_id == 2 
 				UI::main_tool_2.active = true
-				UI::path_builder.sensitive = false
 				UI::tool_descrip.text = "Place"
 				UI::canvas.queue_draw
 			when @tool_id == 3 
 				UI::main_tool_3.active = true 
-				UI::path_builder.sensitive = false
 				UI::tool_descrip.text = "Move"
 				UI::canvas.queue_draw
 			when @tool_id == 4 

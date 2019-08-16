@@ -1,4 +1,4 @@
-CANVAS_SIZE = 3300 #regions 500px by 500px
+CANVAS_SIZE = 3300 #regions 500px by 500px?
 GRID_SPACING = 50
 RATIO = 100 / GRID_SPACING
 RED   = [0.6,0.0,0.0]

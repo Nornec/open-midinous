@@ -19,6 +19,7 @@ class Canvas_Control
 	end
 
 	def canvas_press(event)
+		UI::logic_controls.focus = true
 		case Active_Tool.get_tool
 			when 1
 				@sel_box   = [event.x,event.y,event.x,event.y]
@@ -33,9 +34,16 @@ class Canvas_Control
 	end
 	
 	def canvas_generic(string) #Used as a pseudo-handler between classes
-		if string == "path" && !@nouspoints.empty? && @nouspoints.find_all(&:pathable).any?
-			@nouspoints = Pl.add_path(@nouspoints)
-			@nouspoints, @pathSourced = Pl.cancel_path(@nouspoints)
+		case string
+		when "path" 
+			if !@nouspoints.empty? && @nouspoints.find_all(&:pathable).any?
+				@nouspoints = Pl.add_path(@nouspoints)
+				@nouspoints, @pathSourced = Pl.cancel_path(@nouspoints)
+				UI::canvas.queue_draw
+			end
+		when "prop"
+			@nouspoints = Pl.modify_properties(@nouspoints)
+			Pl.populate_prop(@nouspoints)
 			UI::canvas.queue_draw
 		end
 	end
@@ -118,7 +126,7 @@ class Canvas_Control
 		#Set the scene if the current tool doesn't permit a style
 		case Active_Tool.get_tool
 			when 1
-				@nouspoints, @pathSourced = Pl.cancel_path(@nouspoints)
+				@nouspoints, @pathSourced = Pl.cancel_path(@nouspoints) 
 			when 2
 				@nouspoints, @pathSourced = Pl.cancel_path(@nouspoints)
 			when 3
@@ -131,6 +139,7 @@ class Canvas_Control
 		#Paths are behind points, so draw them first
 		@nouspoints.each        { |n| n.path_draw(cr) }
 		@nouspoints.each        { |n| n.draw(cr) }
+		
 
 	end
 	

@@ -1,6 +1,11 @@
 class Point_Logic
 	include Logic_Controls
 	
+	def initialize
+		@prop_names = ["Note","Velocity","Duration (%)","X-coordinate","Y-coordinate","Color","Path Mode"]
+		@curr_prop = nil
+	end
+	
 	def add_point(r_origin,points) #Point existence search
 		unless (collision_check(r_origin,points))
 			points << NousPoint.new(r_origin)
@@ -21,8 +26,9 @@ class Point_Logic
 	end
 	
 	def select_points(box,points) #Select points with the select tool
+		UI::point_list_model.clear
+		UI::prop_mod.text = ""
 		box_origin = [box[0],box[1]] #box is an array with 4 values
-		prop_names = ["X-coordinate","Y-coordinate","Color","Path Mode"]
 		points.each do |n|
 			if check_bounds(n.origin,box)
 					 n.select
@@ -31,18 +37,88 @@ class Point_Logic
 			else 
 				n.deselect
 				UI::point_list_model.clear
+				UI::prop_mod.text = ""
 			end
 		end
-		
+		populate_prop(points)
+		return points
+	end
+	
+	def populate_prop (points)
+		UI::point_list_model.clear
 		if points.find_all(&:selected).length == 1
-			prop_vals  = points.find(&:selected).properties
-			prop_names.each	do |v|
+		  prop_vals = [points[0].note,
+			             points[0].velocity,
+									 points[0].duration,
+									 points[0].x,
+									 points[0].y,
+									 color_to_hex(points[0].default_color),
+									 points[0].path_mode]
+			@prop_names.each	do |v|
 				iter = UI::point_list_model.append
 				iter[0] = v
-				iter[1] = prop_vals[prop_names.find_index(v)].to_s
+				iter[1] = prop_vals[@prop_names.find_index(v)].to_s
 			end
+		elsif points.find_all(&:selected).length > 1
+			UI::point_list_model.clear
+			UI::prop_mod.text = ""
 		end
-
+		return points
+	end	
+	def point_list_select(selected)
+		return if selected == nil
+		@curr_prop = selected[0]
+		UI::prop_mod.text = selected[1]
+	end
+	
+	def check_input(text)
+		case @curr_prop
+			when "Note", "Velocity"
+				if text.to_i >= 1 && text.to_i <= 127
+						 UI::prop_mod_button.sensitive = true
+				else UI::prop_mod_button.sensitive = false
+				end
+			when "Duration (%)"
+				if text.to_i >= 1 && text.to_i <= 100
+						 UI::prop_mod_button.sensitive = true
+				else UI::prop_mod_button.sensitive = false
+				end
+			when "X-coordinate", "Y-coordinate"
+				if round_num_to_grid(text.to_i) >= 50 && round_num_to_grid(text.to_i) <= 3250
+						 UI::prop_mod_button.sensitive = true
+				else UI::prop_mod_button.sensitive = false
+				end
+			when "Color"
+				if text.match(/^#[0-9A-Fa-f]{6}$/)
+					   UI::prop_mod_button.sensitive = true
+				else UI::prop_mod_button.sensitive = false
+				end
+			when "Path Mode"
+				if text == "horz" || text == "vert"
+						 UI::prop_mod_button.sensitive = true
+				else UI::prop_mod_button.sensitive = false
+				end
+			else UI::prop_mod_button.sensitive = false
+		end
+	end
+	
+	def modify_properties(points)
+		case @curr_prop
+			when "Note"
+				points.find(&:selected).note = UI::prop_mod.text.to_i
+			when "Velocity"
+				points.find(&:selected).velocity = UI::prop_mod.text.to_i
+			when "Duration (%)"
+				points.find(&:selected).duration = UI::prop_mod.text.to_i
+			when "X-coordinate"
+				points.find(&:selected).x = UI::prop_mod.text.to_i
+			when "Y-coordinate"
+				points.find(&:selected).y = UI::prop_mod.text.to_i
+			when "Color"
+				points.find(&:selected).set_default_color(hex_to_color(UI::prop_mod.text))
+			when "Path Mode"
+				points.find(&:selected).path_mode = UI::prop_mod.text
+		end
 		return points
 	end
 	
@@ -63,7 +139,6 @@ class Point_Logic
 	
 	def cancel_selected(points)
 		points.find_all(&:selected).each { |n| n.deselect }
-		UI::point_list_model.clear
 		return points
 	end
 	def cancel_path(points)
@@ -72,17 +147,20 @@ class Point_Logic
 	end
 	
 	def delete_points(points)
-		return if points.length.zero?
-		points.find_all {|f| !f.path_to.length.zero?}.each {|n| n.path_to.reject!(&:selected)}
+		points.find_all {|f| !f.path_to.length.zero?}.each   {|n| n.path_to.reject!(&:selected)}
 		points.find_all {|f| !f.path_from.length.zero?}.each {|n| n.path_from.reject!(&:selected)}
 		points.reject!(&:selected)
 		UI::point_list_model.clear
+		UI::prop_mod.text = ""
 		return points
 	end
 	
 	def move_points(diff,points)
 		if move_check(diff,points)
-			points.find_all(&:selected).each {|n| n.set_destination(diff) }			
+			points.find_all(&:selected).each {|n| n.set_destination(diff) }	
+			UI::point_list_model.clear
+			UI::prop_mod.text = ""
+			populate_prop(points)			
 		end
 		return points
 	end
@@ -99,8 +177,9 @@ class Point_Logic
 end
 
 class NousPoint
-	attr_accessor :source, :color, :path_to, :path_from, :properties
-	attr_reader :selected, :pathable, :origin, :bounds, :x, :y
+	attr_accessor :source, :color, :path_to, :path_from, :note, :x, :y,
+	              :velocity, :duration, :default_color, :path_mode
+	attr_reader :selected, :pathable, :origin, :bounds
 	
 	def initialize(o) #where the point was initially placed
 		@x = o[0]
@@ -110,13 +189,15 @@ class NousPoint
 		@color          = GREY #point color defaults to gray
 		@path_color     = CYAN
 		@default_color  = GREY
+		@note           = 60     #all notes start at middle c
+		@velocity       = 100		 #       ``       with 100 velocity
+		@duration       = 100    #       ``            a length 100% of the path length
 		@pathable       = false
 		@selected       = false
 		@source         = false
 		@path_to        = [] #array of references to points that are receiving a path from this point
 		@path_from      = [] #array of references to points that are sending   a path to   this point
-		@draw_mode      = "horz"
-		@properties = [@x,@y,@default_color,@draw_mode]
+		@path_mode      = "horz"
 	end
 
 	def not_selected
@@ -163,7 +244,6 @@ class NousPoint
 	end
 	def select  #elevate color to denote 'selected' and sets a flag
 		@selected = true
-		@color = WHITE
 	end
 	def deselect #resets the color from elevated 'selected' values and sets a flag
 		@selected = false
@@ -175,13 +255,43 @@ class NousPoint
 		cr.rounded_rectangle(@x-8,@y-8,16,16,2,2) #slightly smaller rectangle adds 'relief' effect
 		cr.fill
 		
+		
 		cr.set_source_rgba(@color[0],@color[1],@color[2],1)
 		cr.circle(@x,@y,1)
 		cr.fill
-		cr.rounded_rectangle(@x-10,@y-10,20,20,2,2)
-		cr.set_line_width(2)
-		cr.stroke	 
+		
+		if !@selected
+			cr.rounded_rectangle(@x-10,@y-10,20,20,2,2)
+			cr.set_line_width(2)
+			cr.stroke
+		end
+		if @selected
+			cr.set_source_rgba(1,1,1,0.8)
+			cr.rounded_rectangle(@x-10,@y-10,20,20,2,2) #slightly smaller rectangle adds 'relief' effect
+			cr.move_to(@x-18,@y-18)
+			cr.line_to(@x-14,@y-18)
+			cr.move_to(@x-18,@y-18)
+			cr.line_to(@x-18,@y-14)
+
+			cr.move_to(@x+18,@y-18)
+			cr.line_to(@x+14,@y-18)
+			cr.move_to(@x+18,@y-18)
+			cr.line_to(@x+18,@y-14)
+						
+			cr.move_to(@x-18,@y+18)
+			cr.line_to(@x-14,@y+18)
+			cr.move_to(@x-18,@y+18)
+			cr.line_to(@x-18,@y+14)
+						
+			cr.move_to(@x+18,@y+18)
+			cr.line_to(@x+14,@y+18)
+			cr.move_to(@x+18,@y+18)
+			cr.line_to(@x+18,@y+14)
+			cr.set_line_width(2)
+			cr.stroke
+		end
 	end
+	
 	def path_draw(cr)
 		cr.set_source_rgba(@path_color[0],@path_color[1],@path_color[2],0.4)
 		@path_to.each   {|t| trace_path_to(cr,t)}
@@ -205,7 +315,7 @@ class NousPoint
 	end
 
 	def trace_path_to(cr,t)
-		case @draw_mode
+		case @path_mode
 		when "horz"
 			cr.move_to(@x,@y)
 			cr.line_to(t.x,@y)
@@ -220,7 +330,7 @@ class NousPoint
 		end
 	end	
 	def trace_path_from(cr,s)
-		case @draw_mode
+		case @path_mode
 		when "horz"
 			cr.move_to(s.x,s.y)
 			cr.line_to(@x,s.y)
