@@ -1,18 +1,24 @@
 module Logic_Controls #various reusable functions useful for checks and math
-
-	def round_to_grid(coord) #rounds a coordinate to the nearest snappable grid point
+	
+	def set_point_speed(tempo,beats,beat_note) #Sets time between each grid point
+		point_speed = (tempo/60)*spacing         #Grid points that will be hit per second 
+		return point_speed                       #(will be a fraction most of the time)
+	end
+	
+	def round_to_grid(coord,spacing) #rounds a coordinate to the nearest snappable grid point
 		coord.map! do |n|
-			n = n.to_f / 100
-			n = (n * RATIO).round
-			n = (n * 100) / RATIO
+			temp = n % spacing
+			n -= temp if temp < (spacing/2)
+			n = n-temp+spacing if temp >= (spacing/2)
+			n
 		end
 		return coord
 	end
 	
-	def round_num_to_grid(num)
-		n = n.to_f / 100
-		n = (n*RATIO).round
-		n = (n*100) / RATIO
+	def round_num_to_grid(num,spacing)
+		temp = num % spacing
+		num -= temp if temp < (spacing/2)
+		num -= n-temp+spacing if temp >= (spacing/2)
 		return num
 	end
 	

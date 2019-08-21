@@ -62,6 +62,7 @@
     <property name="text" translatable="yes">Program Running Normally</property>
   </object>
   <object class="GtkTextBuffer" id="tool_descrip"/>
+  <object class="GtkTextBuffer" id="t_sig"/>
   <object class="GtkApplicationWindow" id="midinous">
 		<property name="visible">True</property>
 		<property name="name">midinous_main</property>
@@ -289,7 +290,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton">
+                  <object class="GtkButtonEx" id="play">
                     <property name="label" translatable="yes">Play</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
@@ -354,7 +355,7 @@
                 <property name="height_request">35</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="pixels_above_lines">7</property>
+                <property name="pixels_above_lines">11</property>
                 <property name="editable">False</property>
                 <property name="indent">6</property>
                 <property name="cursor_visible">False</property>
@@ -390,7 +391,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry" id="prop_mod">
+                  <object class="GtkPropEntry" id="prop_mod">
                     <property name="width_request">168</property>
                     <property name="height_request">34</property>
                     <property name="visible">True</property>
@@ -415,7 +416,7 @@
 												<child>
 													<object class="GtkTreeView" id="point_list">
 														<property name="visible">True</property>
-														<property name="can_focus">True</property>
+														<property name="can_focus">False</property>
 														<property name="model">point_list_model</property>
 														<child internal-child="selection">
 															<object class="GtkTreeSelection" id="point_list_selection"/>
@@ -525,6 +526,41 @@
                   <packing>
                     <property name="x">66</property>
                     <property name="y">385</property>
+                  </packing>
+                </child>
+								<child>
+                  <object class="GtkLabel" id="t_sig_label">
+                    <property name="width_request">63</property>
+                    <property name="height_request">32</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Time Signature</property>
+                    <attributes>
+                      <attribute name="size" value="200"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="x">5</property>
+                    <property name="y">430</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkTextView">
+										<property name="width_request">50</property>
+										<property name="height_request">35</property>
+										<property name="visible">True</property>
+										<property name="can_focus">False</property>
+										<property name="pixels_above_lines">8</property>
+										<property name="editable">False</property>
+										<property name="indent">6</property>
+										<property name="cursor_visible">False</property>
+										<property name="buffer">t_sig</property>
+										<property name="accepts_tab">False</property>
+										<property name="monospace">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">130</property>
+                    <property name="y">430</property>
                   </packing>
                 </child>
               </object>

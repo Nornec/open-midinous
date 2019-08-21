@@ -18,6 +18,17 @@ class GtkCanvas < Gtk::DrawingArea
 		super()
 	end
 	define_signal('delete-selected-event',nil,nil,nil)
+	define_signal('beat-up',nil,nil,nil)
+	define_signal('beat-dn',nil,nil,nil)
+	define_signal('beat-note-up',nil,nil,nil)
+	define_signal('beat-note-dn',nil,nil,nil)
+end
+class GtkPropEntry < Gtk::Entry
+	type_register
+	def initialize
+		super()
+	end
+	define_signal('keybinding-event',nil,nil,nil)
 end
 
 class UI_Elements
@@ -74,6 +85,9 @@ class UI_Elements
 		def prop_mod_button
 			@builder.get_object("prop_mod_button")
 		end
+		def play
+			@builder.get_object("play")
+		end
 		
 		#Button Areas
 		def logic_controls
@@ -89,6 +103,9 @@ class UI_Elements
 		end
 		def prop_mod
 			@builder.get_object("prop_mod")
+		end
+		def t_sig
+			@builder.get_object("t_sig")
 		end
 		
 		#Labels
@@ -106,6 +123,9 @@ class UI_Elements
 		end		
 		def modify_label
 			@builder.get_object("modify_label")
+		end
+		def t_sig_label
+			@builder.get_object("t_sig_label")
 		end
 		
 		#Point Property Tree
@@ -145,63 +165,17 @@ class UI_Elements
 		path_builder.sensitive = false
 		prop_mod_button.sensitive = false
 		
-		tool_descrip.text = "Select"
+		tool_descrip.text  = "Select"
+		t_sig.text = "4/4"
 		
 		perf_label.markup       = "<b>#{perf_label.text}</b>"
 		tempo_label.markup      = "<b>#{tempo_label.text}</b>"
 		tool_label.markup       = "<b>#{tool_label.text}</b>"
 		property_label.markup   = "<b>#{property_label.text}</b>"
 		modify_label.markup     = "<b>#{modify_label.text}</b>"
+		t_sig_label.markup   = "<b>#{t_sig_label.text}</b>"
 		
 		#canvas.add_events(Gdk::EventMask::BUTTON_PRESS_MASK.nick)
-	end
-	
-	def grid_set(canvas_size,grid_size)
-		UI::canvas.signal_connect("draw") do |_widget,cr| #i think _widget means current widget.
-			#if @startup == true
-			#	@startup = false
-				gr_gray  = [0.3,0.5,0.9,1.0]
-				gr_dgray = [0.5,0.5,0.5,0.1]
-
-				bg_blck = [0.1,0.1,0.1,1.0]
-				# fill background with black
-				cr.set_source_rgba(bg_blck)
-				cr.paint
-				cr.set_source_rgba(gr_gray)
-				#If needed, place a center point on the grid in the future at this point
-				x = grid_size
-				while x < canvas_size
-					y = grid_size
-					while y < canvas_size
-						cr.circle(x,y,1)
-						cr.fill
-						y += grid_size
-					end
-					x += grid_size
-				end
-				# generate the connection points between grid points
-				cr.set_source_rgba(gr_dgray)
-				x = grid_size
-				division = 4
-				y = canvas_size - grid_size
-				while x < canvas_size
-					cr.move_to(x,grid_size)
-					cr.line_to(x,canvas_size-grid_size)
-					cr.set_line_width(1)
-					cr.stroke
-					x += grid_size*division
-				end
-				y = grid_size
-				x = canvas_size - grid_size
-				while y < canvas_size
-					cr.move_to(grid_size,y)
-					cr.line_to(canvas_size-grid_size,y)
-					cr.set_line_width(1)
-					cr.stroke
-					y += grid_size*division
-				end
-			#end
-		end #event handler end
 	end
 
 end
