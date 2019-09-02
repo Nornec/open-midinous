@@ -22,6 +22,7 @@ class GtkCanvas < Gtk::DrawingArea
 	define_signal('beat-dn',nil,nil,nil)
 	define_signal('beat-note-up',nil,nil,nil)
 	define_signal('beat-note-dn',nil,nil,nil)
+	define_signal('travel-event',nil,nil,nil)
 end
 class GtkPropEntry < Gtk::Entry
 	type_register
@@ -88,6 +89,9 @@ class UI_Elements
 		def play
 			@builder.get_object("play")
 		end
+		def stop
+			@builder.get_object("stop")
+		end
 		
 		#Button Areas
 		def logic_controls
@@ -129,29 +133,29 @@ class UI_Elements
 		end
 		
 		#Point Property Tree
-		def point_list_model
-			@builder.get_object("point_list_model")
+		def prop_list_model
+			@builder.get_object("prop_list_model")
 		end	
-		def point_list_view
-			@builder.get_object("point_list_view")
+		def prop_list_view
+			@builder.get_object("prop_list_view")
 		end
-		def point_list
-			@builder.get_object("point_list")
+		def prop_list
+			@builder.get_object("prop_list")
 		end
-		def point_list_col1_h
-			@builder.get_object("point_list_col1_h")
+		def prop_list_col1_h
+			@builder.get_object("prop_list_col1_h")
 		end
-		def point_list_col2_h
-			@builder.get_object("point_list_col2_h")
+		def prop_list_col2_h
+			@builder.get_object("prop_list_col2_h")
 		end	
-		def point_list_col1
-			@builder.get_object("point_list_col1")
+		def prop_list_col1
+			@builder.get_object("prop_list_col1")
 		end
-		def point_list_col2
-			@builder.get_object("point_list_col2")
+		def prop_list_col2
+			@builder.get_object("prop_list_col2")
 		end
-		def point_list_selection
-			@builder.get_object("point_list_selection")
+		def prop_list_selection
+			@builder.get_object("prop_list_selection")
 		end
 		
 		

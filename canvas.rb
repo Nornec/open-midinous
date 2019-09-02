@@ -2,7 +2,8 @@ require_relative "points"
 
 class Canvas_Control
 	include Logic_Controls 
-	
+	attr_accessor :travelers, :queued_note_plays, :queued_note_stops
+	attr_reader :grid_spacing, :midi_sync, :beats, :ms_per_beat, :dragging
 	def initialize
 
 		@sel_box      = nil
@@ -12,18 +13,27 @@ class Canvas_Control
 		@pointOrigin  = nil
 		@pathOrigin   = nil
 		@pointMove    = nil
+		@dragging     = false
 		@diff         = [0,0]
 		@nouspoints   = []
+		@travelers    = []
+		@midi_sync    = 0.000
 		@pathSourced  = false
 		@attempt_path = false
-		@port         = 1
-		@tempo        = 120
-		@beats        = 4 #number of beats in a bar      -- should be reasonably between 1 and 16
-		@beat_note    = 4 #as a fraction of a whole note -- should be between 2 and 16 via powers of 2
-		@prev_beat_note = nil
+		@tempo        = 120.000
+		@ms_per_beat  = 250
+		@beats        = 4 #number of beats in a whole note -- should be reasonably between 1 and 16
+		@beat_note    = 4 #as a fraction of a whole note   -- should be between 2 and 16 via powers of 2
 		@grid_spacing = 35
+		@queued_note_plays = []
+		@queued_note_stops = []
 	end
-
+	
+	def set_tempo(tempo)
+		@tempo = tempo
+		@ms_per_beat = (60/@tempo)
+	end
+	
 	def canvas_press(event)
 		UI::logic_controls.focus = true
 		case Active_Tool.get_tool
@@ -55,12 +65,65 @@ class Canvas_Control
 	end
 	
 	def canvas_play
-		Pm.note_send(60,@port)
-		#timing code goes here. Find source points. start there.
+		if @nouspoints.find_all(&:traveler_start)
+			@playing = true	
+			UI::play.sensitive = false
+			UI::stop.sensitive = true
+		end
+		#puts "=========="
+		#puts "Play begin"
+		@nouspoints.find_all(&:traveler_start).each do |n|
+			if !n.path_to.length.zero?
+				#Play the source note somehow, but find out how to stop it
+				n.path_to.each {|p| @travelers << Traveler.new(n.origin,p)}
+			else
+				puts "nothing to travel to"
+				#play a note and that's it.
+			end
+		end
+		canvas_timeout(@ms_per_beat) #Start sequence
+	end
+
+	def canvas_timeout(secs)
+		@stored_time = Time.now.to_f*1000
+		GLib::Timeout.add(secs) do
+			UI::canvas.signal_emit('travel-event') unless !@playing
+			false
+		end
+	end
+	
+	def canvas_travel
+		canvas_stop if !@playing || @travelers.length == 0
+		@travelers.each {|t| t.travel}
+		@travelers.find_all(&:reached).each do
+			|t| t.dest.path_to.each {|p| @travelers << Traveler.new(t.dest_origin,p)}
+			t.reached = false
+		end
+
+		@queued_note_stops.each {|n| n.stop}
+		@queued_note_plays.each {|n| n.play}
+		@queued_note_plays = []
+		@queued_note_stops = []
+		@travelers.reject!(&:remove)
+		canvas_timeout(sync_diff(@stored_time))
+		UI::canvas.queue_draw
+	end
+
+	def canvas_stop
+		#puts "Play end  "
+		#puts "=========="
+		@playing = false
+		@travelers = []
+		@nouspoints.each do |n|
+			n.playing = false
+			Pm.note_rlse(n.channel,n.note)
+		end
+		UI::canvas.queue_draw
+		UI::play.sensitive = true
+		UI::stop.sensitive = false
 	end
 	
 	def canvas_grid_change(dir)
-	  
 		case dir
 		when "+"
 			@beats += 1
@@ -81,17 +144,21 @@ class Canvas_Control
 	end
 	
 	def canvas_drag(obj,event)
+		@dragging = false
 		case
 			when (@selecting && @sel_box)
+				@dragging = true
 				@sel_box[2] = event.x
 				@sel_box[3] = event.y
 				obj.queue_draw
 			when (@pointOrigin)
+				@dragging = true
 				@pointOrigin[0] = event.x
 				@pointOrigin[1] = event.y
 			when (@pointMove)
+				@dragging = true
 				# difference in movement of the point, cumulative until mouse released
-				@diff = round_to_grid([(event.x - @pointMove[0]) , (event.y - @pointMove[1])],@grid_spacing)
+				@diff = round_to_grid([(event.x - @pointMove[0]) , (event.y - @pointMove[1])])
 				@pointMove[2] = event.x
 				@pointMove[3] = event.y
 				obj.queue_draw
@@ -99,6 +166,7 @@ class Canvas_Control
 	end
 	
 	def canvas_release(obj,event)
+		@dragging = false
 		case Active_Tool.get_tool
 			when 1
 				@sel_box = pos_box(@sel_box)
@@ -107,7 +175,7 @@ class Canvas_Control
 				@selecting = false
 				obj.queue_draw
 			when 2 #Add a point where/when the tool is released
-				@nouspoints = Pl.add_point(round_to_grid(@pointOrigin,@grid_spacing),@nouspoints)
+				@nouspoints = Pl.add_point(round_to_grid(@pointOrigin),@nouspoints)
 				@pointOrigin = nil
 				obj.queue_draw
 			when 3 #move point(s) designated by the move stencil
@@ -181,8 +249,8 @@ class Canvas_Control
 			when(@pointMove)
 				start_coord = [@pointMove[0],@pointMove[1]]
 				end_coord   = [@pointMove[2],@pointMove[3]]
-				start_coord = round_to_grid(start_coord,@grid_spacing)
-				end_coord   = round_to_grid(end_coord,@grid_spacing)
+				start_coord = round_to_grid(start_coord)
+				end_coord   = round_to_grid(end_coord)
 				
 				cr.move_to(start_coord[0],start_coord[1])
 				cr.set_source_rgba(RED)
@@ -194,7 +262,7 @@ class Canvas_Control
 				cr.stroke
 		end
 		
-		#Set the scene if the current tool doesn't permit a style
+		#Set the scene if the current tool does not permit a style
 		case Active_Tool.get_tool
 			when 1
 				@nouspoints, @pathSourced = Pl.cancel_path(@nouspoints) 

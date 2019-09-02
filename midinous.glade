@@ -13,21 +13,21 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>  
-	<object class="GtkAdjustment" id="point_list_scroll_h">
+	<object class="GtkAdjustment" id="prop_list_scroll_h">
     <property name="upper">300</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
-  <object class="GtkAdjustment" id="point_list_scroll_v">
+  <object class="GtkAdjustment" id="prop_list_scroll_v">
     <property name="upper">600</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
-	<object class="GtkListStore" id="point_list_model">
+	<object class="GtkListStore" id="prop_list_model">
     <columns>
-      <!-- column-name point_list_col1 -->
+      <!-- column-name prop_list_col1 -->
       <column type="gchararray"/>
-      <!-- column-name point_list_col2 -->
+      <!-- column-name prop_list_col2 -->
       <column type="gchararray"/>
     </columns>
   </object>
@@ -277,7 +277,7 @@
                 <property name="homogeneous">True</property>
                 <property name="layout_style">start</property>
                 <child>
-                  <object class="GtkButton">
+                  <object class="GtkButtonEx" id="stop">
                     <property name="label" translatable="yes">Stop</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
@@ -403,26 +403,26 @@
                   </packing>
                 </child>
                 <child>
-									<object class="GtkScrolledWindow" id="point_list_window">
+									<object class="GtkScrolledWindow" id="prop_list_window">
 										<property name="width_request">252</property>
 										<property name="height_request">271</property>
 										<property name="visible">True</property>
 										<property name="can_focus">False</property>
 										<property name="shadow_type">in</property>
 										<child>
-											<object class="GtkViewport" id="point_list_view">
+											<object class="GtkViewport" id="prop_list_view">
 												<property name="visible">True</property>
 												<property name="can_focus">False</property>
 												<child>
-													<object class="GtkTreeView" id="point_list">
+													<object class="GtkTreeView" id="prop_list">
 														<property name="visible">True</property>
 														<property name="can_focus">False</property>
-														<property name="model">point_list_model</property>
+														<property name="model">prop_list_model</property>
 														<child internal-child="selection">
-															<object class="GtkTreeSelection" id="point_list_selection"/>
+															<object class="GtkTreeSelection" id="prop_list_selection"/>
 														</child>
 														<child>
-															<object class="GtkTreeViewColumn" id="point_list_col1_h">
+															<object class="GtkTreeViewColumn" id="prop_list_col1_h">
 																<property name="resizable">True</property>
 																<property name="min_width">100</property>
 																<property name="title" translatable="yes">Property</property>
@@ -430,7 +430,7 @@
 																<property name="sort_indicator">True</property>
 																<property name="sort_column_id">0</property>
 																<child>
-																	<object class="GtkCellRendererText" id="point_list_col1">
+																	<object class="GtkCellRendererText" id="prop_list_col1">
 																		<property name="size">16</property>
 																	</object>
 																	<attributes>
@@ -440,12 +440,12 @@
 															</object>
 														</child>
 														<child>
-															<object class="GtkTreeViewColumn" id="point_list_col2_h">
+															<object class="GtkTreeViewColumn" id="prop_list_col2_h">
 																<property name="resizable">True</property>
 																<property name="title" translatable="yes">Value</property>
 																<property name="sort_column_id">1</property>
 																<child>
-																	<object class="GtkCellRendererText" id="point_list_col2">
+																	<object class="GtkCellRendererText" id="prop_list_col2">
 																		<property name="size">16</property>
 																	</object>
 																	<attributes>

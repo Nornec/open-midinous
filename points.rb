@@ -2,7 +2,7 @@ class Point_Logic
 	include Logic_Controls
 	
 	def initialize
-		@prop_names = ["Note","Velocity","Duration (%)","Channel","X-coordinate","Y-coordinate","Color","Path Mode","Signal Start"]
+		@prop_names = ["Note","Velocity","Duration (beats)","Channel","X-coordinate","Y-coordinate","Color","Path Mode","Signal Start"]
 		@curr_prop = nil
 	end
 	
@@ -26,7 +26,7 @@ class Point_Logic
 	end
 	
 	def select_points(box,points) #Select points with the select tool
-		UI::point_list_model.clear
+		UI::prop_list_model.clear
 		UI::prop_mod.text = ""
 		box_origin = [box[0],box[1]] #box is an array with 4 values
 		points.each do |n|
@@ -36,7 +36,7 @@ class Point_Logic
 					 n.select
 			else 
 				n.deselect
-				UI::point_list_model.clear
+				UI::prop_list_model.clear
 				UI::prop_mod.text = ""
 			end
 		end
@@ -45,7 +45,7 @@ class Point_Logic
 	end
 	
 	def populate_prop (points)
-		UI::point_list_model.clear
+		UI::prop_list_model.clear
 		UI::prop_mod.text = ""
 		point = nil
 		point = points.find(&:selected) if points.find_all(&:selected).length == 1
@@ -58,18 +58,18 @@ class Point_Logic
 									 point.y,
 									 color_to_hex(point.default_color),
 									 point.path_mode,
-									 point.signal_start]
+									 point.traveler_start]
 			@prop_names.each	do |v|
-				iter = UI::point_list_model.append
+				iter = UI::prop_list_model.append
 				iter[0] = v
 				iter[1] = prop_vals[@prop_names.find_index(v)].to_s
 			end
 		elsif points.find_all(&:selected).length > 1
-			UI::point_list_model.clear
+			UI::prop_list_model.clear
 			UI::prop_mod.text = ""
 		end
 	end	
-	def point_list_select(selected)
+	def prop_list_select(selected)
 		return if selected == nil
 		@curr_prop = selected[0]
 		if   selected[1][0] == "#"
@@ -87,8 +87,8 @@ class Point_Logic
 						 UI::prop_mod_button.sensitive = true
 				else UI::prop_mod_button.sensitive = false
 				end
-			when "Duration (%)"
-				if text.to_i >= 1 && text.to_i <= 100
+			when "Duration (beats)"
+				if text.to_i >= 1 && text.to_i <= 1000
 						 UI::prop_mod_button.sensitive = true
 				else UI::prop_mod_button.sensitive = false
 				end
@@ -98,7 +98,9 @@ class Point_Logic
 				else UI::prop_mod_button.sensitive = false
 				end
 			when "X-coordinate", "Y-coordinate"
-				if round_num_to_grid(text.to_i) >= 50 && round_num_to_grid(text.to_i) <= 3250
+				if round_num_to_grid(text.to_i) >= CC.grid_spacing && 
+				   round_num_to_grid(text.to_i) <= (CANVAS_SIZE - CC.grid_spacing)
+				then
 						 UI::prop_mod_button.sensitive = true
 				else UI::prop_mod_button.sensitive = false
 				end
@@ -127,7 +129,7 @@ class Point_Logic
 				points.find(&:selected).note = UI::prop_mod.text.to_i
 			when "Velocity"
 				points.find(&:selected).velocity = UI::prop_mod.text.to_i
-			when "Duration (%)"
+			when "Duration (beats)"
 				points.find(&:selected).duration = UI::prop_mod.text.to_i
 			when "Channel"
 				points.find(&:selected).channel = UI::prop_mod.text.to_i
@@ -142,9 +144,9 @@ class Point_Logic
 			when "Signal Start"
 				case UI::prop_mod.text
 					when "true"
-						points.find(&:selected).signal_start = true
+						points.find(&:selected).traveler_start = true
 					when "false"
-						points.find(&:selected).signal_start = false
+						points.find(&:selected).traveler_start = false
 				end
 		end
 		return points
@@ -178,7 +180,7 @@ class Point_Logic
 		points.find_all {|f| !f.path_to.length.zero?}.each   {|n| n.path_to.reject!(&:selected)}
 		points.find_all {|f| !f.path_from.length.zero?}.each {|n| n.path_from.reject!(&:selected)}
 		points.reject!(&:selected)
-		UI::point_list_model.clear
+		UI::prop_list_model.clear
 		UI::prop_mod.text = ""
 		return points
 	end
@@ -186,7 +188,7 @@ class Point_Logic
 	def move_points(diff,points)
 		if move_check(diff,points)
 			points.find_all(&:selected).each {|n| n.set_destination(diff) }	
-			UI::point_list_model.clear
+			UI::prop_list_model.clear
 			UI::prop_mod.text = ""
 			populate_prop(points)			
 		end
@@ -207,7 +209,7 @@ end
 class NousPoint
 	attr_accessor :source, :color, :path_to, :path_from, :note, :x, :y,
 	              :velocity, :duration, :default_color, :path_mode, 
-								:signal_start, :channel
+								:traveler_start, :channel, :playing
 	attr_reader :selected, :pathable, :origin, :bounds
 	
 	def initialize(o) #where the point was initially placed
@@ -220,11 +222,12 @@ class NousPoint
 		@color          = GREY #point color defaults to gray++
 		@path_color     = CYAN
 		@default_color  = GREY
-		@note           = 60     #all notes start at middle c
-		@velocity       = 100		 #       ``       with 100 velocity
-		@duration       = 100    #       ``       at a length (%) of the path length
-		@channel        = 1      #       ``       assigned to midi channel 1 (instrument 1, but we will refer to them as channels, not instruments)
-		@signal_start   = false
+		@note           = 60                         #all notes start at middle c
+		@velocity       = 100		                     #       ``       with 100 velocity
+		@channel        = 1                          #       ``       assigned to midi channel 1 (instrument 1, but we will refer to them as channels, not instruments)
+		@duration       = 1                          #length of note in grid points (should be considered beats)
+		@traveler_start = false
+		@playing        = false
 		@pathable       = false
 		@selected       = false
 		@source         = false
@@ -285,8 +288,8 @@ class NousPoint
 	
 	def draw(cr)                     #point will always be drawn to this specification.
 		cr.set_source_rgba(@color[0],@color[1],@color[2],0.4)
-		if @signal_start
-			signal_start_draw(cr)
+		if @traveler_start
+			traveler_start_draw(cr)
 		else
 			cr.rounded_rectangle(@x-@dp[1],@y-@dp[1],@dp[5],@dp[5],2,2) #slightly smaller rectangle adds 'relief' effect
 		end
@@ -297,16 +300,16 @@ class NousPoint
 		cr.fill
 		
 		if !@selected
-			if @signal_start
-				signal_start_draw(cr)
+			if @traveler_start
+				traveler_start_draw(cr)
 			else
 				cr.rounded_rectangle(@x-@dp[2],@y-@dp[2],@dp[6],@dp[6],2,2)
 			end
 		end
 		if @selected
 			cr.set_source_rgba(1,1,1,0.8)
-			if @signal_start			
-				signal_start_draw(cr)
+			if @traveler_start			
+				traveler_start_draw(cr)
 			else
 				cr.rounded_rectangle(@x-@dp[2],@y-@dp[2],@dp[6],@dp[6],2,2) #a slightly smaller rectangle adds 'relief' effect
 			end
@@ -314,6 +317,7 @@ class NousPoint
 		end
 		cr.set_line_width(2)
 		cr.stroke
+		play_draw(cr) if @playing
 	end
 	
 	def path_draw(cr)
@@ -337,9 +341,19 @@ class NousPoint
 			@path_to.each   {|t| trace_path_to(cr,t)}
 			cr.set_line_width(3)
 			cr.stroke
-		end
+		end	
 	end
-	def signal_start_draw(cr)
+	def play_draw(cr)
+		cr.set_source_rgb(@color[0],@color[1],@color[2])
+		if @traveler_start
+			traveler_start_draw(cr)
+		else
+			cr.rounded_rectangle(@x-@dp[2],@y-@dp[2],@dp[6],@dp[6],2,2)
+		end
+		cr.fill
+	end
+	
+	def traveler_start_draw(cr)
 		cr.move_to(@x-@dp[0],@y-@dp[3])
 		cr.line_to(@x+@dp[0],@y-@dp[3])
 		cr.line_to(@x+@dp[1],@y-@dp[1])
@@ -401,6 +415,38 @@ class NousPoint
 			cr.line_to(@x,@y)
 		end
 	end
+end
+
+class Traveler #A traveler handles the source note playing and creates another traveler if the destination is reached.
+	attr_reader :remove, :dest, :dest_origin
+	attr_accessor :reached
+	def initialize(srce_origin,dest) #Traveler should play note when reaches destination. Should not need to create another traveler if it's a dead end.
+		@srce_origin = srce_origin
+		@dest_origin = dest.origin
+		@dest        = dest
+		@travel_c    = 0
+		@distance    = ((@dest_origin[0] - @srce_origin[0]).abs + (@dest_origin[1] - @srce_origin[1]).abs)/CC.grid_spacing
+		@reached     = false
+		@remove      = false
+	end
+
+	def travel
+		@travel_c += 1
+		if @travel_c == @distance
+			@reached = true
+			@dest.playing = true
+			CC.queued_note_plays << NoteSender.new(@dest.note,@dest.channel,@dest.velocity)
+		elsif @travel_c == (@distance + @dest.duration)
+			@dest.playing = false
+			queue_removal
+		end
+	end
+	
+	def queue_removal
+		CC.queued_note_stops << NoteSender.new(@dest.note,@dest.channel,0)
+		@remove = true
+	end
+	
 end
 
 Pl = Point_Logic.new

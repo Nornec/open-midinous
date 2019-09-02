@@ -5,13 +5,13 @@ module Key_Bindings
 		unless !UI::logic_controls.focus? #Key bindings for the main canvas screen
 			case event.keyval
 				when 113        # Q
-					UI::main_tool_1.signal_emit("keybinding-event")
+					UI::main_tool_1.signal_emit("keybinding-event") if CC.dragging == false
 				when 119        # W
-					UI::main_tool_2.signal_emit("keybinding-event")
+					UI::main_tool_2.signal_emit("keybinding-event") if CC.dragging == false
 				when 101, 102   # E or F (colemak)
-					UI::main_tool_3.signal_emit("keybinding-event")
+					UI::main_tool_3.signal_emit("keybinding-event") if CC.dragging == false
 				when 114, 112   # R or P (colemak)
-					UI::main_tool_4.signal_emit("keybinding-event")
+					UI::main_tool_4.signal_emit("keybinding-event") if CC.dragging == false
 				when 65535      # del
 					UI::canvas.signal_emit("delete-selected-event")
 				when 116        # T
@@ -24,8 +24,11 @@ module Key_Bindings
 					UI::canvas.signal_emit("beat-note-up")
 				when 123        # {
 					UI::canvas.signal_emit("beat-note-dn")
-				when 65461      # num 5
-					UI::play.signal_emit("keybinding-event")
+			end
+			if event.keyval == 65462 && UI::play.sensitive? == true   
+				UI::play.signal_emit("keybinding-event")
+			elsif event.keyval == 65461 && UI::stop.sensitive? == true
+				UI::stop.signal_emit("keybinding-event")
 			end
 		end
 		

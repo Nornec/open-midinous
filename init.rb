@@ -1,3 +1,4 @@
+require_relative "proc_midi"
 require_relative "constants"
 require_relative "logic"
 require_relative "ui"
@@ -14,7 +15,7 @@ class Init_Prog
 		grid_center
 		initialize_provider
 		apply_style(UI::midinous,@provider)
-		apply_style(UI::point_list_view,@provider)
+		apply_style(UI::prop_list_view,@provider)
 	end
 	
 	def grid_center #center the grid
@@ -39,7 +40,8 @@ class Init_Prog
 	
 end
 
-init = Init_Prog.new
+init  = Init_Prog.new
+Times = Time.new
 #init.grid_center # Setting Grid Center here ensures the background always gets drawn first
 
 module Event_Router
@@ -55,6 +57,7 @@ module Event_Router
 	UI::path_builder.signal_connect("keybinding-event")      {CC.canvas_generic("path")}
 	UI::prop_mod.signal_connect("changed")                   {Pl.check_input(UI::prop_mod.text)}
 	UI::prop_mod.signal_connect("keybinding-event")          {CC.canvas_generic("prop")}
+	UI::stop.signal_connect("keybinding-event")              {CC.canvas_stop}
 	UI::play.signal_connect("keybinding-event")              {CC.canvas_play}
 	
 	#For clicks
@@ -63,19 +66,21 @@ module Event_Router
 	UI::main_tool_3.signal_connect("button-press-event")     {Active_Tool.set_tool(3)}
 	UI::main_tool_4.signal_connect("button-press-event")     {Active_Tool.set_tool(4)}
 	UI::path_builder.signal_connect("button-press-event")    {CC.canvas_generic("path")}
-	UI::point_list_selection.signal_connect("changed")    	 {Pl.point_list_select(UI::point_list_selection.selected)}
+	UI::prop_list_selection.signal_connect("changed")    	   {Pl.prop_list_select(UI::prop_list_selection.selected)}
 	UI::prop_mod_button.signal_connect("button-press-event") {CC.canvas_generic("prop")}
+	UI::stop.signal_connect("button-press-event")            {CC.canvas_stop}
 	UI::play.signal_connect("button-press-event")            {CC.canvas_play}
 	
 	#Canvas Events
-	UI::canvas.signal_connect("delete-selected-event")       {              CC.canvas_del                }
-	UI::canvas.signal_connect("button-press-event")          { |obj, event| CC.canvas_press(event)       }
-	UI::canvas.signal_connect("motion-notify-event")         { |obj, event| CC.canvas_drag(obj,event)    }
-	UI::canvas.signal_connect("button-release-event")        { |obj, event| CC.canvas_release(obj,event) }                             
-	UI::canvas.signal_connect("draw")                        { |obj, cr|    CC.canvas_draw(obj,cr)       }
-	UI::canvas.signal_connect("beat-up")                     { CC.canvas_grid_change("+")                }
-	UI::canvas.signal_connect("beat-dn")                     { CC.canvas_grid_change("-")                }
-	UI::canvas.signal_connect("beat-note-up")                { CC.canvas_grid_change("++")               }
-	UI::canvas.signal_connect("beat-note-dn")                { CC.canvas_grid_change("--")               }
+	UI::canvas.signal_connect("delete-selected-event")       {              CC.canvas_del                 }
+	UI::canvas.signal_connect("button-press-event")          { |obj, event| CC.canvas_press(event)        }
+	UI::canvas.signal_connect("motion-notify-event")         { |obj, event| CC.canvas_drag(obj,event)     }
+	UI::canvas.signal_connect("button-release-event")        { |obj, event| CC.canvas_release(obj,event)  }                             
+	UI::canvas.signal_connect("draw")                        { |obj, cr|    CC.canvas_draw(obj,cr)        }
+	UI::canvas.signal_connect("beat-up")                     { CC.canvas_grid_change("+")                 }
+	UI::canvas.signal_connect("beat-dn")                     { CC.canvas_grid_change("-")                 }
+	UI::canvas.signal_connect("beat-note-up")                { CC.canvas_grid_change("++")                }
+	UI::canvas.signal_connect("beat-note-dn")                { CC.canvas_grid_change("--")                }
+	UI::canvas.signal_connect("travel-event")                { CC.canvas_travel                           }
 end
 
