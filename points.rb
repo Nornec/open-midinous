@@ -3,6 +3,7 @@ class Point_Logic
 	
 	def initialize
 		@prop_names = ["Note","Velocity","Duration (beats)","Channel","X-coordinate","Y-coordinate","Color","Path Mode","Signal Start"]
+		@prop_names_multi = ["Note","Velocity","Duration (beats)","Channel","Color","Signal Start"]
 		@curr_prop = nil
 	end
 	
@@ -65,15 +66,53 @@ class Point_Logic
 				iter[1] = prop_vals[@prop_names.find_index(v)].to_s
 			end
 		elsif points.find_all(&:selected).length > 1
+			@prop_names_multi.each do |v|
+				equalizer = []
+				iter = UI::prop_list_model.append
+				iter[0] = v
+				case v
+				when "Note"
+					points.find_all(&:selected).each do |p|
+						equalizer << p.note
+					end
+				when "Velocity"
+					points.find_all(&:selected).each do |p|
+						equalizer << p.velocity
+					end
+				when "Duration (beats)"
+					points.find_all(&:selected).each do |p|
+						equalizer << p.duration
+					end
+				when "Channel"
+					points.find_all(&:selected).each do |p|
+						equalizer << p.channel
+					end
+				when "Color"
+					points.find_all(&:selected).each do |p|
+						equalizer << color_to_hex(p.default_color)
+					end
+				when "Signal Start"
+					points.find_all(&:selected).each do |p|
+						equalizer << p.traveler_start
+					end
+				end
+				if equalizer.uniq.count == 1 
+					iter[1] = equalizer[0].to_s
+				else iter[1] = "Multiple Values"
+				end
+			end
+		else
 			UI::prop_list_model.clear
 			UI::prop_mod.text = ""
 		end
+		
+		
 	end	
 	def prop_list_select(selected)
 		return if selected == nil
 		@curr_prop = selected[0]
 		if   selected[1][0] == "#"
-			   UI::prop_mod.text = selected[1][1..6]
+				 UI::prop_mod.text = selected[1][1..6]
 		else UI::prop_mod.text = selected[1]
 		end
 		UI::prop_mod.position = 0
@@ -126,27 +165,41 @@ class Point_Logic
 	def modify_properties(points)
 		case @curr_prop
 			when "Note"
-				points.find(&:selected).note = UI::prop_mod.text.to_i
+				points.find_all(&:selected).each do |p|
+					p.note = UI::prop_mod.text.to_i
+				end
 			when "Velocity"
-				points.find(&:selected).velocity = UI::prop_mod.text.to_i
+				points.find_all(&:selected).each do |p|
+					p.velocity = UI::prop_mod.text.to_i
+				end
 			when "Duration (beats)"
-				points.find(&:selected).duration = UI::prop_mod.text.to_i
+				points.find_all(&:selected).each do |p|
+					p.duration = UI::prop_mod.text.to_i
+				end
 			when "Channel"
-				points.find(&:selected).channel = UI::prop_mod.text.to_i
+				points.find_all(&:selected).each do |p|
+					p.channel = UI::prop_mod.text.to_i
+				end
 			when "X-coordinate"
 				points.find(&:selected).x = UI::prop_mod.text.to_i
 			when "Y-coordinate"
 				points.find(&:selected).y = UI::prop_mod.text.to_i
 			when "Color"
-				points.find(&:selected).set_default_color(hex_to_color("##{UI::prop_mod.text}"))
+				points.find_all(&:selected).each do |p|
+					p.set_default_color(hex_to_color("##{UI::prop_mod.text}"))
+				end
 			when "Path Mode"
 				points.find(&:selected).path_mode = UI::prop_mod.text
 			when "Signal Start"
 				case UI::prop_mod.text
 					when "true"
-						points.find(&:selected).traveler_start = true
+						points.find_all(&:selected).each do |p|
+							p.traveler_start = true
+						end
 					when "false"
-						points.find(&:selected).traveler_start = false
+						points.find_all(&:selected).each do |p|
+							p.traveler_start = false
+						end
 				end
 		end
 		return points
