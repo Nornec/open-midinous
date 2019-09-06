@@ -49,6 +49,9 @@ module Event_Router
 	#For key bindings
 	UI::midinous.signal_connect("key-press-event")           { |obj, event| route_key(event) }
 	
+	#For generic events
+	UI::tempo.signal_connect("value-changed")                { |obj| CC.set_tempo(obj.value) }
+	
 	#For keys
 	UI::main_tool_1.signal_connect("keybinding-event")       {Active_Tool.set_tool(1)}
 	UI::main_tool_2.signal_connect("keybinding-event")       {Active_Tool.set_tool(2)}

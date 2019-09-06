@@ -92,6 +92,9 @@ class UI_Elements
 		def stop
 			@builder.get_object("stop")
 		end
+		def tempo
+			@builder.get_object("tempo")
+		end
 		
 		#Button Areas
 		def logic_controls

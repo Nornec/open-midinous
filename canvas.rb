@@ -20,8 +20,7 @@ class Canvas_Control
 		@midi_sync    = 0.000
 		@pathSourced  = false
 		@attempt_path = false
-		@tempo        = 120.000
-		@ms_per_beat  = 250
+		@ms_per_beat  = 500.000 #default tempo of 120bpm
 		@beats        = 4 #number of beats in a whole note -- should be reasonably between 1 and 16
 		@beat_note    = 4 #as a fraction of a whole note   -- should be between 2 and 16 via powers of 2
 		@grid_spacing = 35
@@ -30,8 +29,7 @@ class Canvas_Control
 	end
 	
 	def set_tempo(tempo)
-		@tempo = tempo
-		@ms_per_beat = (60/@tempo)
+		@ms_per_beat = 1000 * (60 / tempo)
 	end
 	
 	def canvas_press(event)
@@ -124,6 +122,7 @@ class Canvas_Control
 	end
 	
 	def canvas_grid_change(dir)
+		prev_beat_note = @beat_note
 		case dir
 		when "+"
 			@beats += 1
@@ -138,7 +137,14 @@ class Canvas_Control
 			@beat_note /= 2
 			@beat_note = 2      if @beat_note < 2
 		end
-
+		if @beat_note != prev_beat_note
+			case dir
+			when "++"
+				@ms_per_beat /= 2
+			when "--"
+				@ms_per_beat *= 2
+			end
+		end
 		UI::t_sig.text = "#{@beats}/#{@beat_note}"
 		UI::canvas.queue_draw
 	end

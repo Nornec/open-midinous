@@ -511,7 +511,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkSpinButton">
+                  <object class="GtkSpinButton" id="tempo">
                     <property name="width_request">180</property>
                     <property name="height_request">34</property>
                     <property name="visible">True</property>
