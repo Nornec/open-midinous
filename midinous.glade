@@ -638,10 +638,10 @@
                 <property name="can_focus">False</property>
                 <property name="hscroll_policy">natural</property>
                 <property name="vscroll_policy">natural</property>
-                <child>
+								<child>
                   <object class="GtkCanvas" id="canvas">
                     <property name="visible">True</property>
-                    <property name="app_paintable">True</property>
+                    <property name="app_paintable">False</property>
                     <property name="can_focus">False</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>

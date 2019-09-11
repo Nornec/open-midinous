@@ -260,6 +260,7 @@ class Point_Logic
 end
 
 class NousPoint
+	include Logic_Controls
 	attr_accessor :source, :color, :path_to, :path_from, :note, :x, :y,
 	              :velocity, :duration, :default_color, :path_mode, 
 								:traveler_start, :channel, :playing
@@ -287,6 +288,7 @@ class NousPoint
 		@path_to        = [] #array of references to points that are receiving a path from this point
 		@path_from      = [] #array of references to points that are sending   a path to   this point
 		@path_mode      = "horz"
+		@chev_offsets   = [0,0,0,0]
 	end
 
 	def not_selected
@@ -374,29 +376,42 @@ class NousPoint
 	end
 	
 	def path_draw(cr)
-		cr.set_source_rgba(@path_color[0],@path_color[1],@path_color[2],0.6)
-		@path_to.each   {|t| trace_path_to(cr,t)}
-		cr.set_line_cap(1)    #Round
-		cr.set_line_join(2)   #Miter
-		cr.set_line_width(5)
-		cr.stroke
 		if !@selected
-			@path_to.each   {|t| trace_path_to(cr,t)}
-			cr.set_source_rgba(0,0,0,0.4)
+		
+			cr.set_source_rgba(@path_color[0],@path_color[1],@path_color[2],0.6)
+			@path_to.each {|t| trace_path_to(cr,t)}
+			cr.set_line_cap(1)    #Round
+			cr.set_line_join(2)   #Miter
 			cr.set_line_width(3)
 			cr.stroke
+			
 		elsif @selected
-			cr.set_source_rgba(ORNGE[0],ORNGE[1],ORNGE[2],0.4)
-			@path_from.each {|s| trace_path_from(cr,s)}
-			cr.set_line_width(3)
-			cr.stroke
-			cr.set_source_rgba(@path_color[0],@path_color[1],@path_color[2],0.4) if @selected
+		
+			#cr.set_source_rgba(ORNGE[0],ORNGE[1],ORNGE[2],0.8)
+			#@path_from.each {|s| trace_path_from(cr,s)}
+			#cr.set_line_cap(1)    #Round
+			#cr.set_line_join(2)   #Miter
+			#cr.set_line_width(3)
+			#cr.stroke
+			
+			cr.set_source_rgba(LGRN[0],LGRN[1],LGRN[2],0.8)
 			@path_to.each   {|t| trace_path_to(cr,t)}
+			cr.set_line_cap(1)    #Round
+			cr.set_line_join(2)   #Miter
 			cr.set_line_width(3)
 			cr.stroke
-		end	
+			
+		end
+		
+		@chev_offsets = [0,0,0,0]
+		@path_from.each do |s| 
+			input_mark_draw(cr,relative_pos(@x-s.x,@y-s.y),s)
+			cr.set_source_rgba(s.color[0],s.color[1],s.color[2],1)
+			cr.fill
+		end
+
 	end
-	def play_draw(cr)
+	def play_draw(cr) #If a note is playing, show a visual indicator
 		cr.set_source_rgb(@color[0],@color[1],@color[2])
 		if @traveler_start
 			traveler_start_draw(cr)
@@ -406,7 +421,7 @@ class NousPoint
 		cr.fill
 	end
 	
-	def traveler_start_draw(cr)
+	def traveler_start_draw(cr) #Shape of a traveler start position
 		cr.move_to(@x-@dp[0],@y-@dp[3])
 		cr.line_to(@x+@dp[0],@y-@dp[3])
 		cr.line_to(@x+@dp[1],@y-@dp[1])
@@ -417,7 +432,7 @@ class NousPoint
 		cr.line_to(@x-@dp[1],@y-@dp[1])
 		cr.line_to(@x-@dp[0],@y-@dp[3])
 	end
-	def selection_caret_draw(cr)
+	def selection_caret_draw(cr) #Shape of a selection caret
 		cr.move_to(@x-@dp[4],@y-@dp[4])
 		cr.line_to(@x-@dp[2],@y-@dp[4])
 		cr.move_to(@x-@dp[4],@y-@dp[4])
@@ -468,6 +483,41 @@ class NousPoint
 			cr.line_to(@x,@y)
 		end
 	end
+	
+	def input_mark_draw(cr,rel_pos,s)
+		if    s.path_mode == "horz"
+			case rel_pos
+			when "n","ne","nw"
+				draw_chevron(cr,@chev_offsets[0],"n",self)
+				@chev_offsets[0] += 5
+			when "s","se","sw"
+				draw_chevron(cr,@chev_offsets[1],"s",self)
+				@chev_offsets[1] += 5
+			when "e"
+				draw_chevron(cr,@chev_offsets[2],"e",self)
+				@chev_offsets[2] += 5
+			when "w"
+				draw_chevron(cr,@chev_offsets[3],"w",self)
+				@chev_offsets[3] += 5
+			end
+		elsif s.path_mode == "vert"
+			case rel_pos
+			when "n"
+				draw_chevron(cr,@chev_offsets[0],"n",self)
+				@chev_offsets[0] += 5
+			when "s"
+				draw_chevron(cr,@chev_offsets[1],"s",self)
+				@chev_offsets[1] += 5
+			when "e","ne","se"
+				draw_chevron(cr,@chev_offsets[2],"e",self)
+				@chev_offsets[2] += 5
+			when "w","nw","sw"
+				draw_chevron(cr,@chev_offsets[3],"w",self)
+				@chev_offsets[3] += 5
+			end
+		end
+	end
+	
 end
 
 class Traveler #A traveler handles the source note playing and creates another traveler if the destination is reached.
@@ -498,6 +548,28 @@ class Traveler #A traveler handles the source note playing and creates another t
 	def queue_removal
 		CC.queued_note_stops << NoteSender.new(@dest.note,@dest.channel,0)
 		@remove = true
+	end
+	
+end
+
+class Starter #A starter handles notes that are used as starting points for paths.
+	attr_reader :remove
+	def initialize(srce)
+		@travel_c     = 0
+		@srce         = srce
+		@duration     = @srce.duration
+		@remove       = false
+		@srce.playing = true
+		CC.queued_note_plays << NoteSender.new(@srce.note,@srce.channel,@srce.velocity)
+	end
+	
+	def travel
+		@travel_c += 1
+		if @travel_c == @duration
+			@srce.playing = false
+			CC.queued_note_stops << NoteSender.new(@srce.note,@srce.channel,0)
+			@remove = true
+		end
 	end
 	
 end

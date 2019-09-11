@@ -1,6 +1,8 @@
-CANVAS_SIZE = 4400 #regions 500px by 500px?
+CANVAS_SIZE = 4400
+PI = 3.14159265358979
 RED   = [0.6,0.0,0.0]
 GREEN = [0.0,0.6,0.0]
+LGRN  = [0.4,0.6,0.4]
 BLUE  = [0.0,0.0,0.6]
 GREY  = [0.6,0.6,0.6]
 WHITE = [1.0,1.0,1.0]

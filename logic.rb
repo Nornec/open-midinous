@@ -20,6 +20,86 @@ module Logic_Controls #various reusable functions useful for checks and math
 		return (CC.ms_per_beat - (new_time - (stored_time + CC.ms_per_beat)))
 	end
 	
+	def relative_pos(xd,yd)
+		x_sign = nil
+		y_sign = nil
+		case 
+		when xd > 0
+			x_sign = "+"
+		when xd == 0
+			x_sign = "0"
+		when xd < 0
+			x_sign = "-"
+		end
+		case
+		when yd > 0
+			y_sign = "+"
+		when yd == 0
+			y_sign = "0"
+		when yd < 0
+			y_sign = "-"
+		end
+		
+		sign = [x_sign,y_sign]
+		case sign
+		when ["+","+"]
+			return "se"
+		when ["+","-"]
+			return "ne"
+		when ["-","-"]
+			return "nw"
+		when ["-","+"]
+			return "sw"
+		when ["+","0"]
+			return "e"			
+		when ["-","0"]
+			return "w"
+		when ["0","+"]
+			return "s"
+		when ["0","-"]
+			return "n"
+		end
+	end
+	
+	def draw_chevron(cr,offset,dir,p)
+	  x = p.x
+	  y = p.y
+	  case dir
+	  when "n"
+			cr.move_to(x,  y+12+offset)
+			cr.line_to(x+5,y+17+offset)
+			cr.line_to(x+5,y+21+offset)
+			cr.line_to(x,  y+16+offset)
+			cr.line_to(x-5,y+21+offset)
+			cr.line_to(x-5,y+17+offset)
+			cr.line_to(x,  y+12+offset)
+	  when "s"
+			cr.move_to(x,  y-12-offset)
+			cr.line_to(x+5,y-17-offset)
+			cr.line_to(x+5,y-21-offset)
+			cr.line_to(x,  y-16-offset)
+			cr.line_to(x-5,y-21-offset)
+			cr.line_to(x-5,y-17-offset)
+			cr.line_to(x,  y-12-offset)
+		when "e"
+			cr.move_to(x-12-offset,y)
+			cr.line_to(x-17-offset,y+5)
+			cr.line_to(x-21-offset,y+5)
+			cr.line_to(x-16-offset,y)
+			cr.line_to(x-21-offset,y-5)
+			cr.line_to(x-17-offset,y-5)
+			cr.line_to(x-12-offset,y)
+		when "w"
+			cr.move_to(x+12+offset,y)
+			cr.line_to(x+17+offset,y+5)
+			cr.line_to(x+21+offset,y+5)
+			cr.line_to(x+16+offset,y)
+			cr.line_to(x+21+offset,y-5)
+			cr.line_to(x+17+offset,y-5)
+			cr.line_to(x+12+offset,y)
+		end
+	end
+	
 	def round_num_to_grid(num)
 		temp = num % CC.grid_spacing
 		num -= temp if temp < (CC.grid_spacing/2)

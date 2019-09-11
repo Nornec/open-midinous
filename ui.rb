@@ -34,18 +34,23 @@ end
 
 class UI_Elements
 	# Construct a Gtk::Builder instance and load our UI description
+	attr_reader :bg_buff
 	def build_ui
 		builder_file = "./midinous.glade"
+		bg_tile = "./assets/bg.png"
 		
 		# Connect signal handlers to the constructed widgets
 		@builder = Gtk::Builder.new(:file => builder_file)
-
+		
+		#Set up the background tile for use
+		@bg_buff = GdkPixbuf::Pixbuf.new(:file => bg_tile)
+		
 		#Main window
 		def midinous 
 			@builder.get_object("midinous")
 		end
 
-		#Drawing Area
+		#Drawing Areas
 		def canvas
 			@builder.get_object("canvas")
 		end

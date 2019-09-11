@@ -3,7 +3,7 @@ require_relative "points"
 class Canvas_Control
 	include Logic_Controls 
 	attr_accessor :travelers, :queued_note_plays, :queued_note_stops
-	attr_reader :grid_spacing, :midi_sync, :beats, :ms_per_beat, :dragging
+	attr_reader :grid_spacing, :midi_sync, :beats, :ms_per_beat, :dragging, :start_time
 	def initialize
 
 		@sel_box      = nil
@@ -17,10 +17,11 @@ class Canvas_Control
 		@diff         = [0,0]
 		@nouspoints   = []
 		@travelers    = []
+		@starters     = []
 		@midi_sync    = 0.000
 		@pathSourced  = false
 		@attempt_path = false
-		@ms_per_beat  = 500.000 #default tempo of 120bpm
+		@ms_per_beat  = 250.000 #default tempo of 120bpm
 		@beats        = 4 #number of beats in a whole note -- should be reasonably between 1 and 16
 		@beat_note    = 4 #as a fraction of a whole note   -- should be between 2 and 16 via powers of 2
 		@grid_spacing = 35
@@ -29,7 +30,8 @@ class Canvas_Control
 	end
 	
 	def set_tempo(tempo)
-		@ms_per_beat = 1000 * (60 / tempo)
+		@ms_per_beat = (1000 * (30 / tempo)) / (@beat_note / 4)
+		#puts @ms_per_beat
 	end
 	
 	def canvas_press(event)
@@ -63,27 +65,29 @@ class Canvas_Control
 	end
 	
 	def canvas_play
-		if @nouspoints.find_all(&:traveler_start)
+		
+		if @nouspoints.find(&:traveler_start)
 			@playing = true	
 			UI::play.sensitive = false
 			UI::stop.sensitive = true
 		end
-		#puts "=========="
-		#puts "Play begin"
+
 		@nouspoints.find_all(&:traveler_start).each do |n|
+			@starters << Starter.new(n)
+			UI::canvas.queue_draw
+			@queued_note_plays.each {|o| o.play}
+			
 			if !n.path_to.length.zero?
-				#Play the source note somehow, but find out how to stop it
 				n.path_to.each {|p| @travelers << Traveler.new(n.origin,p)}
-			else
-				puts "nothing to travel to"
-				#play a note and that's it.
 			end
 		end
+		
+		@stored_time = Time.now.to_f*1000
 		canvas_timeout(@ms_per_beat) #Start sequence
+		
 	end
 
 	def canvas_timeout(secs)
-		@stored_time = Time.now.to_f*1000
 		GLib::Timeout.add(secs) do
 			UI::canvas.signal_emit('travel-event') unless !@playing
 			false
@@ -91,27 +95,32 @@ class Canvas_Control
 	end
 	
 	def canvas_travel
-		canvas_stop if !@playing || @travelers.length == 0
+		@queued_note_plays = []
+		canvas_stop if !@playing || (@travelers.length == 0 && @starters.length == 0)
+		@starters.each  {|s| s.travel}
 		@travelers.each {|t| t.travel}
 		@travelers.find_all(&:reached).each do
 			|t| t.dest.path_to.each {|p| @travelers << Traveler.new(t.dest_origin,p)}
 			t.reached = false
 		end
-
+		
 		@queued_note_stops.each {|n| n.stop}
 		@queued_note_plays.each {|n| n.play}
-		@queued_note_plays = []
-		@queued_note_stops = []
+		@starters.reject!(&:remove)
 		@travelers.reject!(&:remove)
+		@queued_note_stops = []
+
 		canvas_timeout(sync_diff(@stored_time))
+		@stored_time += @ms_per_beat
 		UI::canvas.queue_draw
 	end
 
 	def canvas_stop
-		#puts "Play end  "
-		#puts "=========="
 		@playing = false
 		@travelers = []
+		@starters  = []
+		@queued_note_plays = []
+		@queued_note_stops = []
 		@nouspoints.each do |n|
 			n.playing = false
 			Pm.note_rlse(n.channel,n.note)
@@ -200,12 +209,11 @@ class Canvas_Control
 		UI::canvas.queue_draw
 	end
 	
-	def canvas_grid_draw(cr)
+	def canvas_bg_draw(cr)
 		# fill background with black
 		cr.set_source_rgb(BLACK)
 		cr.paint
 		cr.set_source_rgb(BLUGR)
-		#If needed, place a center point on the grid in the future at this point
 		x = @grid_spacing
 		while x < CANVAS_SIZE
 			y = @grid_spacing
@@ -216,7 +224,7 @@ class Canvas_Control
 			end
 			x += @grid_spacing
 		end
-		# generate the connection points between grid points
+		#Handle measure drawing via notches on paths instead of this, maybe
 		cr.set_source_rgba(DGREY)
 		x = @grid_spacing
 		y = CANVAS_SIZE - @grid_spacing
@@ -237,17 +245,14 @@ class Canvas_Control
 			y += @grid_spacing*@beats
 		end
 	end
-
-	def canvas_draw(obj, cr)
-		canvas_grid_draw(cr)
+	
+	def canvas_draw(cr)
+		canvas_bg_draw(cr)
 		case #These draw events are for in-progress/temporary activities
 			when(@sel_box)  
 				width  = @sel_box[2] - @sel_box[0]
 				height = @sel_box[3] - @sel_box[1]
 				
-				cr.set_source_rgba(@sel_white)
-				cr.rectangle(@sel_box[0],@sel_box[1],width,height)
-				cr.fill
 				cr.set_source_rgba(@sel_blue)
 				cr.rectangle(@sel_box[0],@sel_box[1],width,height)
 				cr.set_line_width(2)
