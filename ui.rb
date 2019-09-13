@@ -23,6 +23,9 @@ class GtkCanvas < Gtk::DrawingArea
 	define_signal('beat-note-up',nil,nil,nil)
 	define_signal('beat-note-dn',nil,nil,nil)
 	define_signal('travel-event',nil,nil,nil)
+	define_signal('cycle-point-type-bck',nil,nil,nil)
+	define_signal('cycle-point-type-fwd',nil,nil,nil)
+	define_signal('set-start',nil,nil,nil)
 end
 class GtkPropEntry < Gtk::Entry
 	type_register

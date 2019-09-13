@@ -24,6 +24,12 @@ module Key_Bindings
 					UI::canvas.signal_emit("beat-note-up")
 				when 123        # {
 					UI::canvas.signal_emit("beat-note-dn")
+				when 60
+					UI::canvas.signal_emit("cycle-point-type-bck")
+				when 62
+					UI::canvas.signal_emit("cycle-point-type-fwd")
+				when 97
+					UI::canvas.signal_emit("set-start")
 			end
 			if event.keyval == 65462 && UI::play.sensitive? == true   
 				UI::play.signal_emit("keybinding-event")

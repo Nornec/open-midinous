@@ -79,11 +79,14 @@ module Event_Router
 	UI::canvas.signal_connect("button-press-event")          { |obj, event| CC.canvas_press(event)        }
 	UI::canvas.signal_connect("motion-notify-event")         { |obj, event| CC.canvas_drag(obj,event)     }
 	UI::canvas.signal_connect("button-release-event")        { |obj, event| CC.canvas_release(obj,event)  }                             
-	UI::canvas.signal_connect("draw")                        { |obj, cr|    CC.canvas_draw(cr)        }
+	UI::canvas.signal_connect("draw")                        { |obj, cr|    CC.canvas_draw(cr)            }
 	UI::canvas.signal_connect("beat-up")                     { CC.canvas_grid_change("+")                 }
 	UI::canvas.signal_connect("beat-dn")                     { CC.canvas_grid_change("-")                 }
 	UI::canvas.signal_connect("beat-note-up")                { CC.canvas_grid_change("++")                }
 	UI::canvas.signal_connect("beat-note-dn")                { CC.canvas_grid_change("--")                }
 	UI::canvas.signal_connect("travel-event")                { CC.canvas_travel                           }
+	UI::canvas.signal_connect("cycle-point-type-bck")        { Pl.play_mode_rotate(-1)                    }
+	UI::canvas.signal_connect("cycle-point-type-fwd")        { Pl.play_mode_rotate(1)                     }
+	UI::canvas.signal_connect("set-start")                   { Pl.set_start                               }
 end
 

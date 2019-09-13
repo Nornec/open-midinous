@@ -2,7 +2,7 @@ require_relative "points"
 
 class Canvas_Control
 	include Logic_Controls 
-	attr_accessor :travelers, :queued_note_plays, :queued_note_stops
+	attr_accessor :nouspoints, :travelers, :queued_note_plays, :queued_note_stops 
 	attr_reader :grid_spacing, :midi_sync, :beats, :ms_per_beat, :dragging, :start_time
 	def initialize
 
@@ -76,15 +76,10 @@ class Canvas_Control
 			@starters << Starter.new(n)
 			UI::canvas.queue_draw
 			@queued_note_plays.each {|o| o.play}
-			
-			if !n.path_to.length.zero?
-				n.path_to.each {|p| @travelers << Traveler.new(n.origin,p)}
-			end
+			signal_chain(n)
 		end
-		
 		@stored_time = Time.now.to_f*1000
 		canvas_timeout(@ms_per_beat) #Start sequence
-		
 	end
 
 	def canvas_timeout(secs)
@@ -99,8 +94,8 @@ class Canvas_Control
 		canvas_stop if !@playing || (@travelers.length == 0 && @starters.length == 0)
 		@starters.each  {|s| s.travel}
 		@travelers.each {|t| t.travel}
-		@travelers.find_all(&:reached).each do
-			|t| t.dest.path_to.each {|p| @travelers << Traveler.new(t.dest_origin,p)}
+		@travelers.find_all(&:reached).each do |t|
+			signal_chain(t.dest)
 			t.reached = false
 		end
 		
@@ -114,7 +109,7 @@ class Canvas_Control
 		@stored_time += @ms_per_beat
 		UI::canvas.queue_draw
 	end
-
+	
 	def canvas_stop
 		@playing = false
 		@travelers = []
@@ -128,6 +123,26 @@ class Canvas_Control
 		UI::canvas.queue_draw
 		UI::play.sensitive = true
 		UI::stop.sensitive = false
+	end
+	
+	def signal_chain(point)
+		case point.play_modes[0]
+		when "robin"
+			p = point.path_to.first
+			if p
+				@travelers << Traveler.new(point.origin,p)
+				point.path_to.rotate!
+			end
+		when "split"
+			point.path_to.each {|p| @travelers << Traveler.new(point.origin,p)}
+		when "portal"
+			point.path_to.each do |p|
+				@starters << Starter.new(p)
+				UI::canvas.queue_draw
+				@queued_note_plays.each {|o| o.play}
+				signal_chain(p)
+			end
+		end
 	end
 	
 	def canvas_grid_change(dir)

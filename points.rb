@@ -220,6 +220,22 @@ class Point_Logic
 		return points, source_chosen
 	end
 	
+	def play_mode_rotate(dir)
+		CC.nouspoints.find_all(&:selected).each do |n|
+			if n.path_to.length <= 1
+				case n.play_modes[0]
+				when "robin"
+					n.play_modes.rotate!(dir)	until n.play_modes[0] == "portal"
+				when "portal"
+					n.play_modes.rotate!(dir)	until n.play_modes[0] == "robin"
+				end
+			else
+				n.play_modes.rotate!(dir)
+			end
+			UI::canvas.queue_draw
+		end
+	end
+
 	def cancel_selected(points)
 		points.find_all(&:selected).each { |n| n.deselect }
 		return points
@@ -257,13 +273,25 @@ class Point_Logic
 		return true
 	end
 	
+	def set_start
+		CC.nouspoints.find_all(&:selected).each do |n| 
+			if n.traveler_start == false
+				n.traveler_start = true
+			elsif n.traveler_start == true
+				n.traveler_start = false
+			end 
+		end
+		UI::canvas.queue_draw
+		populate_prop(CC.nouspoints)
+	end
+	
 end
 
 class NousPoint
 	include Logic_Controls
 	attr_accessor :source, :color, :path_to, :path_from, :note, :x, :y,
 	              :velocity, :duration, :default_color, :path_mode, 
-								:traveler_start, :channel, :playing
+								:traveler_start, :channel, :playing, :play_modes
 	attr_reader :selected, :pathable, :origin, :bounds
 	
 	def initialize(o) #where the point was initially placed
@@ -280,12 +308,14 @@ class NousPoint
 		@velocity       = 100		                     #       ``       with 100 velocity
 		@channel        = 1                          #       ``       assigned to midi channel 1 (instrument 1, but we will refer to them as channels, not instruments)
 		@duration       = 1                          #length of note in grid points (should be considered beats)
+		@play_modes     = ["robin","split","portal"]
 		@traveler_start = false
 		@playing        = false
 		@pathable       = false
 		@selected       = false
 		@source         = false
 		@path_to        = [] #array of references to points that are receiving a path from this point
+		@portal_to      = [] #array of references to points that are played at the same time as this point
 		@path_from      = [] #array of references to points that are sending   a path to   this point
 		@path_mode      = "horz"
 		@chev_offsets   = [0,0,0,0]
@@ -351,8 +381,35 @@ class NousPoint
 		cr.fill
 		
 		cr.set_source_rgba(@color[0],@color[1],@color[2],1)
-		cr.circle(@x,@y,1)
-		cr.fill
+		case @play_modes[0]
+		when "robin"
+			if @path_to.length > 1
+				cr.move_to(@x-8,@y)
+				cr.line_to(@x+6,@y-9)
+				cr.set_line_width(2)
+				cr.stroke
+				cr.move_to(@x-8,@y)
+				cr.set_dash([1,4],0)
+				cr.line_to(@x+6,@y+9)
+				cr.set_line_width(2)
+				cr.stroke
+				cr.set_dash([],0)
+			else
+				cr.circle(@x,@y,1)
+				cr.fill
+			end
+		when "split"
+			cr.move_to(@x-8,@y)
+			cr.line_to(@x+6,@y-9)
+			cr.move_to(@x-8,@y)
+			cr.line_to(@x+6,@y+9)
+			cr.set_line_width(2)
+			cr.stroke
+		when "portal"
+			cr.circle(@x,@y,6)
+			cr.set_line_width(2)
+			cr.stroke
+		end
 		
 		if !@selected
 			if @traveler_start
@@ -380,19 +437,8 @@ class NousPoint
 		
 			cr.set_source_rgba(@path_color[0],@path_color[1],@path_color[2],0.6)
 			@path_to.each {|t| trace_path_to(cr,t)}
-			cr.set_line_cap(1)    #Round
-			cr.set_line_join(2)   #Miter
-			cr.set_line_width(3)
-			cr.stroke
 			
 		elsif @selected
-		
-			#cr.set_source_rgba(ORNGE[0],ORNGE[1],ORNGE[2],0.8)
-			#@path_from.each {|s| trace_path_from(cr,s)}
-			#cr.set_line_cap(1)    #Round
-			#cr.set_line_join(2)   #Miter
-			#cr.set_line_width(3)
-			#cr.stroke
 			
 			cr.set_source_rgba(LGRN[0],LGRN[1],LGRN[2],0.8)
 			@path_to.each   {|t| trace_path_to(cr,t)}
@@ -402,7 +448,7 @@ class NousPoint
 			cr.stroke
 			
 		end
-		
+		cr.set_dash([],0)
 		@chev_offsets = [0,0,0,0]
 		@path_from.each do |s| 
 			input_mark_draw(cr,relative_pos(@x-s.x,@y-s.y),s)
@@ -454,6 +500,17 @@ class NousPoint
 		cr.line_to(@x+@dp[4],@y+@dp[2])
 	end
 	def trace_path_to(cr,t)
+		
+		case @play_modes[0]
+		when "robin"
+			cr.set_dash([5,5],0)
+			if @path_to[0] == t
+				cr.set_dash([],0)
+			end
+		when "portal"
+			cr.set_dash([1,5],0)
+		end
+
 		case @path_mode
 		when "horz"
 			cr.move_to(@x,@y)
@@ -467,7 +524,12 @@ class NousPoint
 			cr.move_to(@x,@y)
 			cr.line_to(t.x,t.y)
 		end
-	end	
+		cr.set_line_cap(1)    #Round
+		cr.set_line_join(2)   #Miter
+		cr.set_line_width(3)
+		cr.stroke
+	end
+	
 	def trace_path_from(cr,s)
 		case s.path_mode
 		when "horz"
