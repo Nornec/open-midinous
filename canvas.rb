@@ -142,6 +142,12 @@ class Canvas_Control
 				@queued_note_plays.each {|o| o.play}
 				signal_chain(p)
 			end
+		when "random"
+			p = point.path_to.sample
+			if p
+				@travelers << Traveler.new(point.origin,p)
+				point.path_to.rotate!(rand(point.path_to.length))
+			end
 		end
 	end
 	

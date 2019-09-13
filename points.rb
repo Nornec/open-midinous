@@ -308,7 +308,7 @@ class NousPoint
 		@velocity       = 100		                     #       ``       with 100 velocity
 		@channel        = 1                          #       ``       assigned to midi channel 1 (instrument 1, but we will refer to them as channels, not instruments)
 		@duration       = 1                          #length of note in grid points (should be considered beats)
-		@play_modes     = ["robin","split","portal"]
+		@play_modes     = ["robin","split","portal","random"]
 		@traveler_start = false
 		@playing        = false
 		@pathable       = false
@@ -407,6 +407,11 @@ class NousPoint
 			cr.stroke
 		when "portal"
 			cr.circle(@x,@y,6)
+			cr.set_line_width(2)
+			cr.stroke
+		when "random"
+			cr.rectangle(@x-6,@y-2,8,8)
+			cr.rectangle(@x-2,@y-6,8,8)
 			cr.set_line_width(2)
 			cr.stroke
 		end
@@ -510,16 +515,62 @@ class NousPoint
 		when "portal"
 			cr.set_dash([1,5],0)
 		end
-
+		
+		rel_pos = relative_pos(t.x-@x,t.y-@y)
+		case rel_pos
+		when "n"
+			cr.move_to(@x,@y-10)
+			cr.line_to(t.x,t.y+10)
+		when "s"
+			cr.move_to(@x,@y+10)
+			cr.line_to(t.x,t.y-10)
+		when "e"
+			cr.move_to(@x+10,@y)
+			cr.line_to(t.x-10,t.y)
+		when "w"
+			cr.move_to(@x-10,@y)
+			cr.line_to(t.x+10,t.y)
+		end
+		
 		case @path_mode
 		when "horz"
-			cr.move_to(@x,@y)
-			cr.line_to(t.x,@y)
-			cr.line_to(t.x,t.y)
+			case rel_pos
+			when "ne"
+				cr.move_to(@x+10,@y)
+				cr.line_to(t.x,@y)
+				cr.line_to(t.x,t.y+10)
+			when "nw"
+				cr.move_to(@x-10,@y)
+				cr.line_to(t.x,@y)
+				cr.line_to(t.x,t.y+10)
+			when "se"
+				cr.move_to(@x+10,@y)
+				cr.line_to(t.x,@y)
+				cr.line_to(t.x,t.y-10)
+			when "sw"
+				cr.move_to(@x-10,@y)
+				cr.line_to(t.x,@y)
+				cr.line_to(t.x,t.y-10)
+			end
 		when "vert"
-			cr.move_to(@x,@y)
-			cr.line_to(@x,t.y)
-			cr.line_to(t.x,t.y)
+			case rel_pos
+			when "ne"
+				cr.move_to(@x,@y-10)
+				cr.line_to(@x,t.y)
+				cr.line_to(t.x-10,t.y)
+			when "nw"
+				cr.move_to(@x,@y-10)
+				cr.line_to(@x,t.y)
+				cr.line_to(t.x+10,t.y)
+			when "se"
+				cr.move_to(@x,@y+10)
+				cr.line_to(@x,t.y)
+				cr.line_to(t.x-10,t.y)
+			when "sw"
+				cr.move_to(@x,@y+10)
+				cr.line_to(@x,t.y)
+				cr.line_to(t.x+10,t.y)
+			end
 		when "line"
 			cr.move_to(@x,@y)
 			cr.line_to(t.x,t.y)
