@@ -23,8 +23,8 @@ class GtkCanvas < Gtk::DrawingArea
 	define_signal('beat-note-up',nil,nil,nil)
 	define_signal('beat-note-dn',nil,nil,nil)
 	define_signal('travel-event',nil,nil,nil)
-	define_signal('cycle-point-type-bck',nil,nil,nil)
-	define_signal('cycle-point-type-fwd',nil,nil,nil)
+	define_signal('cycle-play-mode-bck',nil,nil,nil)
+	define_signal('cycle-play-mode-fwd',nil,nil,nil)
 	define_signal('set-start',nil,nil,nil)
 end
 class GtkPropEntry < Gtk::Entry
@@ -48,11 +48,37 @@ class UI_Elements
 		#Set up the background tile for use
 		@bg_buff = GdkPixbuf::Pixbuf.new(:file => bg_tile)
 		
-		#Main window
+		#Windows
 		def midinous 
 			@builder.get_object("midinous")
 		end
-
+		def file_chooser
+			@builder.get_object("file_chooser")
+		end
+		def confirmer
+			@builder.get_object("confirmer")
+		end
+		
+		#Menu Items
+		def file_new
+			@builder.get_object("file_new")
+		end
+		def file_open
+			@builder.get_object("file_open")
+		end
+		def file_save
+			@builder.get_object("file_save")
+		end
+		def file_save_as
+			@builder.get_object("file_save_as")
+		end
+		def file_quit
+			@builder.get_object("file_quit")
+		end
+		def help_about
+			@builder.get_object("help_about")
+		end
+		
 		#Drawing Areas
 		def canvas
 			@builder.get_object("canvas")
@@ -103,6 +129,18 @@ class UI_Elements
 		def tempo
 			@builder.get_object("tempo")
 		end
+		def file_operation
+			@builder.get_object("file_operation")
+		end
+		def file_cancel
+			@builder.get_object("file_cancel")
+		end
+		def confirmer_confirm
+			@builder.get_object("confirmer_confirm")
+		end
+		def confirmer_cancel
+			@builder.get_object("confirmer_cancel")
+		end
 		
 		#Button Areas
 		def logic_controls
@@ -121,6 +159,9 @@ class UI_Elements
 		end
 		def t_sig
 			@builder.get_object("t_sig")
+		end
+		def file_name
+			@builder.get_object("file_name")
 		end
 		
 		#Labels
@@ -141,6 +182,9 @@ class UI_Elements
 		end
 		def t_sig_label
 			@builder.get_object("t_sig_label")
+		end
+		def confirmer_label
+			@builder.get_object("confirmer_label")
 		end
 		
 		#Point Property Tree
@@ -188,9 +232,9 @@ class UI_Elements
 		tool_label.markup       = "<b>#{tool_label.text}</b>"
 		property_label.markup   = "<b>#{property_label.text}</b>"
 		modify_label.markup     = "<b>#{modify_label.text}</b>"
-		t_sig_label.markup   = "<b>#{t_sig_label.text}</b>"
+		t_sig_label.markup      = "<b>#{t_sig_label.text}</b>"
 		
-		#canvas.add_events(Gdk::EventMask::BUTTON_PRESS_MASK.nick)
+		#canvas.add_events(Gdk::EventMask::BUTTON_PRESS_MASK.nick) #This points to a nickname, basically a string like "button-press-mask" in this case
 	end
 
 end
@@ -231,9 +275,6 @@ class Tool
 
 end
 
-GtkRadioButtonEx #Declare the new radio button definition to add functionality
-GtkButtonEx      #Declare the new button
-GtkCanvas        #Declare the new drawing area
 UI = UI_Elements.new()  #Create a new UI_Elements object
 UI::build_ui
 Active_Tool = Tool.new

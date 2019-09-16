@@ -4,7 +4,10 @@ class Point_Logic
 	def initialize
 		@prop_names = ["Note","Velocity","Duration (beats)","Channel","X-coordinate","Y-coordinate","Color","Path Mode","Signal Start"]
 		@prop_names_multi = ["Note","Velocity","Duration (beats)","Channel","Color","Signal Start"]
+		@prop_names_adv = []
+		@prop_names_adv_multi = []
 		@curr_prop = nil
+		@curr_prop_adv = nil
 	end
 	
 	def add_point(r_origin,points) #Point existence search
@@ -291,7 +294,8 @@ class NousPoint
 	include Logic_Controls
 	attr_accessor :source, :color, :path_to, :path_from, :note, :x, :y,
 	              :velocity, :duration, :default_color, :path_mode, 
-								:traveler_start, :channel, :playing, :play_modes
+								:traveler_start, :channel, :playing, :play_modes,
+								:path_to_memory
 	attr_reader :selected, :pathable, :origin, :bounds
 	
 	def initialize(o) #where the point was initially placed
@@ -301,24 +305,27 @@ class NousPoint
 		@y = o[1]
 		@origin = o
 		@bounds = [@x-@dp[5],@y-@dp[5],@x+@dp[5],@y+@dp[5]]
-		@color          = GREY #point color defaults to gray++
-		@path_color     = CYAN
-		@default_color  = GREY
-		@note           = 60                         #all notes start at middle c
-		@velocity       = 100		                     #       ``       with 100 velocity
-		@channel        = 1                          #       ``       assigned to midi channel 1 (instrument 1, but we will refer to them as channels, not instruments)
-		@duration       = 1                          #length of note in grid points (should be considered beats)
-		@play_modes     = ["robin","split","portal","random"]
-		@traveler_start = false
-		@playing        = false
-		@pathable       = false
-		@selected       = false
-		@source         = false
-		@path_to        = [] #array of references to points that are receiving a path from this point
-		@portal_to      = [] #array of references to points that are played at the same time as this point
-		@path_from      = [] #array of references to points that are sending   a path to   this point
-		@path_mode      = "horz"
-		@chev_offsets   = [0,0,0,0]
+		@color           = GREY #point color defaults to gray++
+		@path_color      = CYAN
+		@default_color   = GREY
+		@note            = 60                         #all notes start at middle c (C3)
+		@relative_note   = nil                        #String that will contain a relative shift for the node. This should override note
+		@root            = "C"                        #Only relevant for relative note
+		@velocity        = 100		                    #       ``       with 100 velocity
+		@channel         = 1                          #       ``       assigned to midi channel 1 (instrument 1, but we will refer to them as channels, not instruments)
+		@duration        = 1                          #length of note in grid points (should be considered beats)
+		@play_modes      = ["robin","split","portal","random"]
+		@traveler_start  = false
+		@playing         = false
+		@pathable        = false
+		@selected        = false
+		@source          = false
+		@path_to         = [] #array of references to points that are receiving a path from this point
+		@path_to_memory  = [] #memory of @path_to so that it can be reset upon stopping.
+		@portal_to       = [] #array of references to points that are played at the same time as this point
+		@path_from       = [] #array of references to points that are sending a path to this point
+		@path_mode       = "horz"
+		@chev_offsets    = [0,0,0,0]
 	end
 
 	def not_selected
@@ -352,7 +359,13 @@ class NousPoint
 		@source = false
 		@color = @default_color
 	end
-
+	
+	def reset_path_to
+		@path_to = []
+		@path_to_memory.each {|p| @path_to << p}
+		@path_to_memory = []
+	end
+	
 	def set_default_color(c)
 		@color = c
 		@default_color = c

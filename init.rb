@@ -16,6 +16,8 @@ class Init_Prog
 		initialize_provider
 		apply_style(UI::midinous,@provider)
 		apply_style(UI::prop_list_view,@provider)
+		apply_style(UI::file_chooser,@provider)
+		apply_style(UI::confirmer,@provider)
 	end
 	
 	def grid_center #center the grid
@@ -74,6 +76,18 @@ module Event_Router
 	UI::stop.signal_connect("button-press-event")            {CC.canvas_stop}
 	UI::play.signal_connect("button-press-event")            {CC.canvas_play}
 	
+	#For file operations
+	UI::file_quit.signal_connect("button-press-event")        {UI::confirmer.visible = true}     #Confirm first with a dialog if there are unsaved changes.
+	UI::file_new.signal_connect("button-press-event")         {UI::confirmer.visible = true}     #Confirm first with a dialog if there are unsaved changes.
+	UI::file_open.signal_connect("button-press-event")        {UI::file_chooser.visible = true}  #Change the label to "Open"
+	UI::file_save.signal_connect("button-press-event")        {UI::file_chooser.visible = true}  #Change the label to "Save", or save automatically if the working file exists.
+	UI::file_save_as.signal_connect("button-press-event")     {UI::file_chooser.visible = true}  #Change the label to "Save As"
+	UI::file_operation.signal_connect("button-press-event")   {UI::file_chooser.visible = false} #If open, confirm first with a dialog if there are unsaved changes. If save/save as, overwrite confirmation should automatically appear. Otherwise, use confirmer.
+	UI::file_cancel.signal_connect("button-press-event")      {UI::file_chooser.visible = false}
+	UI::file_chooser.signal_connect("selection-changed")      {UI::file_name.text = UI::file_chooser.filename.split("\\").last unless UI::file_chooser.filename == nil}
+	UI::confirmer_cancel.signal_connect("button-press-event") {UI::confirmer.visible = false}
+	UI::confirmer_confirm.signal_connect("button-press-event"){UI::confirmer.visible = false}
+	
 	#Canvas Events
 	UI::canvas.signal_connect("delete-selected-event")       {              CC.canvas_del                 }
 	UI::canvas.signal_connect("button-press-event")          { |obj, event| CC.canvas_press(event)        }
@@ -85,8 +99,8 @@ module Event_Router
 	UI::canvas.signal_connect("beat-note-up")                { CC.canvas_grid_change("++")                }
 	UI::canvas.signal_connect("beat-note-dn")                { CC.canvas_grid_change("--")                }
 	UI::canvas.signal_connect("travel-event")                { CC.canvas_travel                           }
-	UI::canvas.signal_connect("cycle-point-type-bck")        { Pl.play_mode_rotate(-1)                    }
-	UI::canvas.signal_connect("cycle-point-type-fwd")        { Pl.play_mode_rotate(1)                     }
+	UI::canvas.signal_connect("cycle-play-mode-bck")        { Pl.play_mode_rotate(-1)                    }
+	UI::canvas.signal_connect("cycle-play-mode-fwd")        { Pl.play_mode_rotate(1)                     }
 	UI::canvas.signal_connect("set-start")                   { Pl.set_start                               }
 end
 

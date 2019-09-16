@@ -25,9 +25,9 @@ module Key_Bindings
 				when 123        # {
 					UI::canvas.signal_emit("beat-note-dn")
 				when 60
-					UI::canvas.signal_emit("cycle-point-type-bck")
+					UI::canvas.signal_emit("cycle-play-mode-bck")
 				when 62
-					UI::canvas.signal_emit("cycle-point-type-fwd")
+					UI::canvas.signal_emit("cycle-play-mode-fwd")
 				when 97
 					UI::canvas.signal_emit("set-start")
 			end

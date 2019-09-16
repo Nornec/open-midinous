@@ -10,16 +10,16 @@ class Canvas_Control
 		@selecting    = false
 		@sel_white    = [0.8,0.8,0.8,0.1] 	#selection box colors
 		@sel_blue     = [0,0.5,1,0.5]      #selection box colors
-		@pointOrigin  = nil
-		@pathOrigin   = nil
-		@pointMove    = nil
+		@point_origin = nil
+		@path_origin  = nil
+		@point_move   = nil
 		@dragging     = false
 		@diff         = [0,0]
 		@nouspoints   = []
 		@travelers    = []
 		@starters     = []
 		@midi_sync    = 0.000
-		@pathSourced  = false
+		@path_sourced = false
 		@attempt_path = false
 		@ms_per_beat  = 250.000 #default tempo of 120bpm
 		@beats        = 4 #number of beats in a whole note -- should be reasonably between 1 and 16
@@ -34,27 +34,12 @@ class Canvas_Control
 		#puts @ms_per_beat
 	end
 	
-	def canvas_press(event)
-		UI::logic_controls.focus = true
-		case Active_Tool.get_tool
-			when 1
-				@sel_box   = [event.x,event.y,event.x,event.y]
-				@selecting   = true
-			when 2
-				@pointOrigin = [event.x,event.y]
-			when 3
-				@pointMove = [event.x,event.y,event.x,event.y]
-			when 4
-				@pathOrigin = [event.x,event.y]
-		end
-	end
-	
 	def canvas_generic(string) #Used as a pseudo-handler between classes
 		case string
 		when "path" 
 			if !@nouspoints.empty? && @nouspoints.find_all(&:pathable).any?
 				@nouspoints = Pl.add_path(@nouspoints)
-				@nouspoints, @pathSourced = Pl.cancel_path(@nouspoints)
+				@nouspoints, @path_sourced = Pl.cancel_path(@nouspoints)
 				UI::canvas.queue_draw
 			end
 		when "prop"
@@ -67,7 +52,8 @@ class Canvas_Control
 	def canvas_play
 		
 		if @nouspoints.find(&:traveler_start)
-			@playing = true	
+			@playing = true
+			@nouspoints.find_all {|n| n.path_to.length > 1}.each {|p| p.path_to.each {|e| p.path_to_memory << e}}
 			UI::play.sensitive = false
 			UI::stop.sensitive = true
 		end
@@ -120,6 +106,7 @@ class Canvas_Control
 			n.playing = false
 			Pm.note_rlse(n.channel,n.note)
 		end
+		@nouspoints.find_all {|n| n.path_to.length > 1}.each {|p| p.reset_path_to}
 		UI::canvas.queue_draw
 		UI::play.sensitive = true
 		UI::stop.sensitive = false
@@ -179,6 +166,20 @@ class Canvas_Control
 		UI::canvas.queue_draw
 	end
 	
+	def canvas_press(event)
+		UI::logic_controls.focus = true
+		case Active_Tool.get_tool
+			when 1
+				@sel_box   = [event.x,event.y,event.x,event.y]
+				@selecting   = true
+			when 2
+				@point_origin = [event.x,event.y]
+			when 3
+				@point_move = [event.x,event.y,event.x,event.y]
+			when 4
+				@path_origin = [event.x,event.y]
+		end
+	end
 	def canvas_drag(obj,event)
 		@dragging = false
 		case
@@ -187,40 +188,43 @@ class Canvas_Control
 				@sel_box[2] = event.x
 				@sel_box[3] = event.y
 				obj.queue_draw
-			when (@pointOrigin)
+			when (@point_origin)
 				@dragging = true
-				@pointOrigin[0] = event.x
-				@pointOrigin[1] = event.y
-			when (@pointMove)
+				@point_origin[0] = event.x
+				@point_origin[1] = event.y
+			when (@point_move)
 				@dragging = true
 				# difference in movement of the point, cumulative until mouse released
-				@diff = round_to_grid([(event.x - @pointMove[0]) , (event.y - @pointMove[1])])
-				@pointMove[2] = event.x
-				@pointMove[3] = event.y
+				@diff = round_to_grid([(event.x - @point_move[0]) , (event.y - @point_move[1])])
+				@point_move[2] = event.x
+				@point_move[3] = event.y
 				obj.queue_draw
 		end
 	end
-	
 	def canvas_release(obj,event)
 		@dragging = false
 		case Active_Tool.get_tool
 			when 1
-				@sel_box = pos_box(@sel_box)
-				@nouspoints = Pl.select_points(@sel_box,@nouspoints)
-				@sel_box = nil
-				@selecting = false
-				obj.queue_draw
+				unless !@sel_box
+					@sel_box = pos_box(@sel_box)
+					@nouspoints = Pl.select_points(@sel_box,@nouspoints)
+					@sel_box = nil
+					@selecting = false
+					obj.queue_draw
+				end
 			when 2 #Add a point where/when the tool is released
-				@nouspoints = Pl.add_point(round_to_grid(@pointOrigin),@nouspoints)
-				@pointOrigin = nil
-				obj.queue_draw
+				unless !@point_origin
+					@nouspoints = Pl.add_point(round_to_grid(@point_origin),@nouspoints)
+					@point_origin = nil
+					obj.queue_draw
+				end
 			when 3 #move point(s) designated by the move stencil
 				@nouspoints = Pl.move_points(@diff,@nouspoints)
-				@pointMove = nil
+				@point_move = nil
 				@diff = [0,0]
 				obj.queue_draw
 			when 4 #select singular point
-				@nouspoints, @pathSourced = Pl.select_path_point(@pathOrigin,@nouspoints,@pathSourced)
+				@nouspoints, @path_sourced = Pl.select_path_point(@path_origin,@nouspoints,@path_sourced)
 				obj.queue_draw
 		end
 	end
@@ -278,9 +282,9 @@ class Canvas_Control
 				cr.rectangle(@sel_box[0],@sel_box[1],width,height)
 				cr.set_line_width(2)
 				cr.stroke
-			when(@pointMove)
-				start_coord = [@pointMove[0],@pointMove[1]]
-				end_coord   = [@pointMove[2],@pointMove[3]]
+			when(@point_move)
+				start_coord = [@point_move[0],@point_move[1]]
+				end_coord   = [@point_move[2],@point_move[3]]
 				start_coord = round_to_grid(start_coord)
 				end_coord   = round_to_grid(end_coord)
 				
@@ -297,11 +301,11 @@ class Canvas_Control
 		#Set the scene if the current tool does not permit a style
 		case Active_Tool.get_tool
 			when 1
-				@nouspoints, @pathSourced = Pl.cancel_path(@nouspoints) 
+				@nouspoints, @path_sourced = Pl.cancel_path(@nouspoints) 
 			when 2
-				@nouspoints, @pathSourced = Pl.cancel_path(@nouspoints)
+				@nouspoints, @path_sourced = Pl.cancel_path(@nouspoints)
 			when 3
-				@nouspoints, @pathSourced = Pl.cancel_path(@nouspoints)
+				@nouspoints, @path_sourced = Pl.cancel_path(@nouspoints)
 			when 4
 				@nouspoints = Pl.cancel_selected(@nouspoints)
 		end
