@@ -2,7 +2,7 @@ require_relative "points"
 
 class Canvas_Control
 	include Logic_Controls 
-	attr_accessor :nouspoints, :travelers, :queued_note_plays, :queued_note_stops 
+	attr_accessor :nouspoints, :travelers, :repeaters, :queued_note_plays, :queued_note_stops
 	attr_reader :grid_spacing, :midi_sync, :beats, :ms_per_beat, :dragging, :start_time
 	def initialize
 
@@ -18,6 +18,7 @@ class Canvas_Control
 		@nouspoints   = []
 		@travelers    = []
 		@starters     = []
+		@repeaters    = []
 		@midi_sync    = 0.000
 		@path_sourced = false
 		@attempt_path = false
@@ -77,9 +78,10 @@ class Canvas_Control
 	
 	def canvas_travel
 		@queued_note_plays = []
-		canvas_stop if !@playing || (@travelers.length == 0 && @starters.length == 0)
+		canvas_stop if !@playing || (@travelers.length == 0 && @starters.length == 0 && @repeaters.length == 0)
 		@starters.each  {|s| s.travel}
 		@travelers.each {|t| t.travel}
+		@repeaters.each {|r| r.repeat}
 		@travelers.find_all(&:reached).each do |t|
 			signal_chain(t.dest)
 			t.reached = false
@@ -89,6 +91,7 @@ class Canvas_Control
 		@queued_note_plays.each {|n| n.play}
 		@starters.reject!(&:remove)
 		@travelers.reject!(&:remove)
+		@repeaters.reject!(&:remove)
 		@queued_note_stops = []
 
 		canvas_timeout(sync_diff(@stored_time))
@@ -100,16 +103,19 @@ class Canvas_Control
 		@playing = false
 		@travelers = []
 		@starters  = []
+		@repeaters = []
 		@queued_note_plays = []
 		@queued_note_stops = []
 		@nouspoints.each do |n|
 			n.playing = false
+			n.repeating = false
 			Pm.note_rlse(n.channel,n.note)
 		end
 		@nouspoints.find_all {|n| n.path_to.length > 1}.each {|p| p.reset_path_to}
 		UI::canvas.queue_draw
-		UI::play.sensitive = true
 		UI::stop.sensitive = false
+		UI::play.sensitive = true
+
 	end
 	
 	def signal_chain(point)
@@ -274,40 +280,40 @@ class Canvas_Control
 	def canvas_draw(cr)
 		canvas_bg_draw(cr)
 		case #These draw events are for in-progress/temporary activities
-			when(@sel_box)  
-				width  = @sel_box[2] - @sel_box[0]
-				height = @sel_box[3] - @sel_box[1]
-				
-				cr.set_source_rgba(@sel_blue)
-				cr.rectangle(@sel_box[0],@sel_box[1],width,height)
-				cr.set_line_width(2)
-				cr.stroke
-			when(@point_move)
-				start_coord = [@point_move[0],@point_move[1]]
-				end_coord   = [@point_move[2],@point_move[3]]
-				start_coord = round_to_grid(start_coord)
-				end_coord   = round_to_grid(end_coord)
-				
-				cr.move_to(start_coord[0],start_coord[1])
-				cr.set_source_rgba(RED)
-				cr.line_to(end_coord[0],end_coord[1])
-				cr.set_line_width(2)
-				cr.stroke
-				cr.rounded_rectangle(end_coord[0]-10,end_coord[1]-10,20,20,2,2)
-				cr.set_line_width(2)
-				cr.stroke
+		when(@sel_box)  
+			width  = @sel_box[2] - @sel_box[0]
+			height = @sel_box[3] - @sel_box[1]
+			
+			cr.set_source_rgba(@sel_blue)
+			cr.rectangle(@sel_box[0],@sel_box[1],width,height)
+			cr.set_line_width(2)
+			cr.stroke
+		when(@point_move)
+			start_coord = [@point_move[0],@point_move[1]]
+			end_coord   = [@point_move[2],@point_move[3]]
+			start_coord = round_to_grid(start_coord)
+			end_coord   = round_to_grid(end_coord)
+			
+			cr.move_to(start_coord[0],start_coord[1])
+			cr.set_source_rgba(RED)
+			cr.line_to(end_coord[0],end_coord[1])
+			cr.set_line_width(2)
+			cr.stroke
+			cr.rounded_rectangle(end_coord[0]-10,end_coord[1]-10,20,20,2,2)
+			cr.set_line_width(2)
+			cr.stroke
 		end
 		
 		#Set the scene if the current tool does not permit a style
 		case Active_Tool.get_tool
-			when 1
-				@nouspoints, @path_sourced = Pl.cancel_path(@nouspoints) 
-			when 2
-				@nouspoints, @path_sourced = Pl.cancel_path(@nouspoints)
-			when 3
-				@nouspoints, @path_sourced = Pl.cancel_path(@nouspoints)
-			when 4
-				@nouspoints = Pl.cancel_selected(@nouspoints)
+		when 1
+			@nouspoints, @path_sourced = Pl.cancel_path(@nouspoints) 
+		when 2
+			@nouspoints, @path_sourced = Pl.cancel_path(@nouspoints)
+		when 3
+			@nouspoints, @path_sourced = Pl.cancel_path(@nouspoints)
+		when 4
+			@nouspoints = Pl.cancel_selected(@nouspoints)
 		end
 	
 		#Draw all the points and paths last

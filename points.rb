@@ -2,8 +2,25 @@ class Point_Logic
 	include Logic_Controls
 	
 	def initialize
-		@prop_names = ["Note","Velocity","Duration (beats)","Channel","X-coordinate","Y-coordinate","Color","Path Mode","Signal Start"]
-		@prop_names_multi = ["Note","Velocity","Duration (beats)","Channel","Color","Signal Start"]
+		@prop_names       = ["Note",
+										  	 "Velocity",
+										  	 "Duration (beats)",
+										  	 "Channel",
+										  	 "Repeat",
+										  	 "X-coordinate",
+										  	 "Y-coordinate",
+										  	 "Color",
+										  	 "Path Mode",
+										  	 "Signal Start",
+										  	 "Play Mode"]
+		@prop_names_multi = ["Note",
+		                     "Velocity",
+												 "Duration (beats)",
+												 "Channel",
+												 "Repeat",
+												 "Color",
+												 "Signal Start",
+												 "Play Mode"]
 		@prop_names_adv = []
 		@prop_names_adv_multi = []
 		@curr_prop = nil
@@ -58,11 +75,13 @@ class Point_Logic
 			             point.velocity,
 									 point.duration,
 									 point.channel,
+									 point.repeat_memory,
 									 point.x,
 									 point.y,
 									 color_to_hex(point.default_color),
 									 point.path_mode,
-									 point.traveler_start]
+									 point.traveler_start,
+									 point.play_modes[0]]
 			@prop_names.each	do |v|
 				iter = UI::prop_list_model.append
 				iter[0] = v
@@ -75,29 +94,21 @@ class Point_Logic
 				iter[0] = v
 				case v
 				when "Note"
-					points.find_all(&:selected).each do |p|
-						equalizer << p.note
-					end
+					points.find_all(&:selected).each {|p| equalizer << p.note}
 				when "Velocity"
-					points.find_all(&:selected).each do |p|
-						equalizer << p.velocity
-					end
+					points.find_all(&:selected).each {|p|	equalizer << p.velocity}
 				when "Duration (beats)"
-					points.find_all(&:selected).each do |p|
-						equalizer << p.duration
-					end
+					points.find_all(&:selected).each {|p| equalizer << p.duration}
 				when "Channel"
-					points.find_all(&:selected).each do |p|
-						equalizer << p.channel
-					end
+					points.find_all(&:selected).each {|p| equalizer << p.channel}
 				when "Color"
-					points.find_all(&:selected).each do |p|
-						equalizer << color_to_hex(p.default_color)
-					end
+					points.find_all(&:selected).each {|p| equalizer << color_to_hex(p.default_color)}
 				when "Signal Start"
-					points.find_all(&:selected).each do |p|
-						equalizer << p.traveler_start
-					end
+					points.find_all(&:selected).each {|p| equalizer << p.traveler_start}
+				when "Play Mode"
+					points.find_all(&:selected).each {|p| equalizer << p.play_modes[0]}
+				when "Repeat"
+					points.find_all(&:selected).each {|p| equalizer << p.repeat_memory}
 				end
 				if equalizer.uniq.count == 1 
 					iter[1] = equalizer[0].to_s
@@ -108,7 +119,6 @@ class Point_Logic
 			UI::prop_list_model.clear
 			UI::prop_mod.text = ""
 		end
-		
 		
 	end	
 	def prop_list_select(selected)
@@ -123,6 +133,9 @@ class Point_Logic
 	end
 	
 	def check_input(text)
+		play_modes = ["robin","split","portal","random"]
+		path_modes = ["horz","vert"]
+		signal_states = ["true","false"]
 		case @curr_prop
 			when "Note", "Velocity"
 				if text.to_i >= 1 && text.to_i <= 127
@@ -152,13 +165,23 @@ class Point_Logic
 				else UI::prop_mod_button.sensitive = false
 				end
 			when "Path Mode"
-				if text == "horz" || text == "vert"
+				if path_modes.include? text
 						 UI::prop_mod_button.sensitive = true
 				else UI::prop_mod_button.sensitive = false
 				end
 			when "Signal Start"
-				if text == "true" || text == "false"
+				if signal_states.include? text
 					   UI::prop_mod_button.sensitive = true
+				else UI::prop_mod_button.sensitive = false
+				end
+			when "Play Mode"
+				if play_modes.include? text
+					   UI::prop_mod_button.sensitive = true
+				else UI::prop_mod_button.sensitive = false
+				end
+			when "Repeat"
+				if text.to_i >= 0 && text.to_i <= 128
+						 UI::prop_mod_button.sensitive = true
 				else UI::prop_mod_button.sensitive = false
 				end
 			else UI::prop_mod_button.sensitive = false
@@ -168,41 +191,38 @@ class Point_Logic
 	def modify_properties(points)
 		case @curr_prop
 			when "Note"
-				points.find_all(&:selected).each do |p|
-					p.note = UI::prop_mod.text.to_i
-				end
+				points.find_all(&:selected).each {|p| p.note = UI::prop_mod.text.to_i}
 			when "Velocity"
-				points.find_all(&:selected).each do |p|
-					p.velocity = UI::prop_mod.text.to_i
-				end
+				points.find_all(&:selected).each {|p| p.velocity = UI::prop_mod.text.to_i}
 			when "Duration (beats)"
-				points.find_all(&:selected).each do |p|
-					p.duration = UI::prop_mod.text.to_i
-				end
+				points.find_all(&:selected).each {|p| p.duration = UI::prop_mod.text.to_i}
 			when "Channel"
-				points.find_all(&:selected).each do |p|
-					p.channel = UI::prop_mod.text.to_i
-				end
+				points.find_all(&:selected).each {|p| p.channel = UI::prop_mod.text.to_i}
 			when "X-coordinate"
 				points.find(&:selected).x = UI::prop_mod.text.to_i
 			when "Y-coordinate"
 				points.find(&:selected).y = UI::prop_mod.text.to_i
 			when "Color"
-				points.find_all(&:selected).each do |p|
-					p.set_default_color(hex_to_color("##{UI::prop_mod.text}"))
-				end
+				points.find_all(&:selected).each {|p| p.set_default_color(hex_to_color("##{UI::prop_mod.text}"))}
 			when "Path Mode"
 				points.find(&:selected).path_mode = UI::prop_mod.text
 			when "Signal Start"
 				case UI::prop_mod.text
-					when "true"
-						points.find_all(&:selected).each do |p|
-							p.traveler_start = true
-						end
-					when "false"
-						points.find_all(&:selected).each do |p|
-							p.traveler_start = false
-						end
+				when "true"
+					points.find_all(&:selected).each {|p| p.traveler_start = true}
+				when "false"
+					points.find_all(&:selected).each {|p| p.traveler_start = false}
+				end
+			when "Play Mode"
+				if UI::prop_mod.text == "robin" || UI::prop_mod.text == "portal"
+					points.find_all(&:selected).each {|p| p.play_modes.rotate! until p.play_modes[0] == UI::prop_mod.text}
+				else
+					points.find_all {|p| p.selected == true && p.path_to.length > 1}.each {|p| p.play_modes.rotate! until p.play_modes[0] == UI::prop_mod.text}
+				end
+			when "Repeat"
+				points.find_all(&:selected).each do |p| 
+					p.repeat = UI::prop_mod.text.to_i
+					p.repeat_memory = UI::prop_mod.text.to_i
 				end
 		end
 		return points
@@ -295,8 +315,9 @@ class NousPoint
 	attr_accessor :source, :color, :path_to, :path_from, :note, :x, :y,
 	              :velocity, :duration, :default_color, :path_mode, 
 								:traveler_start, :channel, :playing, :play_modes,
-								:path_to_memory
-	attr_reader :selected, :pathable, :origin, :bounds
+								:path_to_memory, :repeat, :repeat_memory, :repeating
+	attr_reader   :selected, :pathable, :origin, :bounds
+	              
 	
 	def initialize(o) #where the point was initially placed
 		@dp = [4,8,10,12,14,16,20]
@@ -314,12 +335,15 @@ class NousPoint
 		@velocity        = 100		                    #       ``       with 100 velocity
 		@channel         = 1                          #       ``       assigned to midi channel 1 (instrument 1, but we will refer to them as channels, not instruments)
 		@duration        = 1                          #length of note in grid points (should be considered beats)
+		@repeat          = 0                          #Number of times the node should repeat before moving on
+		@repeat_memory   = 0
 		@play_modes      = ["robin","split","portal","random"]
 		@traveler_start  = false
 		@playing         = false
 		@pathable        = false
 		@selected        = false
 		@source          = false
+		@repeating       = false
 		@path_to         = [] #array of references to points that are receiving a path from this point
 		@path_to_memory  = [] #memory of @path_to so that it can be reset upon stopping.
 		@portal_to       = [] #array of references to points that are played at the same time as this point
@@ -334,7 +358,7 @@ class NousPoint
 	def not_pathable
 		!@pathable
 	end
-	
+
 	def origin=(o) #sets the origin of the point explicitly
 		@x = o[0]
 		@y = o[1]
@@ -396,6 +420,7 @@ class NousPoint
 		cr.set_source_rgba(@color[0],@color[1],@color[2],1)
 		case @play_modes[0]
 		when "robin"
+			@path_color = CYAN
 			if @path_to.length > 1
 				cr.move_to(@x-8,@y)
 				cr.line_to(@x+6,@y-9)
@@ -412,6 +437,7 @@ class NousPoint
 				cr.fill
 			end
 		when "split"
+			@path_color = CYAN
 			cr.move_to(@x-8,@y)
 			cr.line_to(@x+6,@y-9)
 			cr.move_to(@x-8,@y)
@@ -419,14 +445,43 @@ class NousPoint
 			cr.set_line_width(2)
 			cr.stroke
 		when "portal"
+			@path_color = RED
 			cr.circle(@x,@y,6)
 			cr.set_line_width(2)
 			cr.stroke
 		when "random"
+			@path_color = VLET
 			cr.rectangle(@x-6,@y-2,8,8)
 			cr.rectangle(@x-2,@y-6,8,8)
 			cr.set_line_width(2)
 			cr.stroke
+		end
+		
+		if @repeat_memory > 0
+			#cr.move_to(@x-@dp[2],@y-@dp[2]) #top left of the point graphic
+			if @traveler_start
+				cr.move_to(@x+3,@y-@dp[2]-2)
+				cr.line_to(@x-2,-6+@y-@dp[2]-2)
+				cr.line_to(@x-2,6+@y-@dp[2]-2)
+				cr.line_to(@x+3,@y-@dp[2]-2)
+				cr.fill
+				cr.move_to(@x-3,@y+@dp[2]+2)
+				cr.line_to(@x+2,-6+@y+@dp[2]+2)
+				cr.line_to(@x+2,6+@y+@dp[2]+2)
+				cr.line_to(@x-3,@y+@dp[2]+2)
+				cr.fill
+			else
+				cr.move_to(@x-2,@y-@dp[2])
+				cr.line_to(@x-7,-6+@y-@dp[2])
+				cr.line_to(@x-7,6+@y-@dp[2])
+				cr.line_to(@x-2,@y-@dp[2])
+				cr.fill
+				cr.move_to(@x+2,@y+@dp[2])
+				cr.line_to(@x+7,-6+@y+@dp[2])
+				cr.line_to(@x+7,6+@y+@dp[2])
+				cr.line_to(@x+2,@y+@dp[2])
+				cr.fill
+			end
 		end
 		
 		if !@selected
@@ -448,6 +503,7 @@ class NousPoint
 		cr.set_line_width(2)
 		cr.stroke
 		play_draw(cr) if @playing
+		repeat_draw(cr) if @repeating
 	end
 	
 	def path_draw(cr)
@@ -482,6 +538,11 @@ class NousPoint
 		else
 			cr.rounded_rectangle(@x-@dp[2],@y-@dp[2],@dp[6],@dp[6],2,2)
 		end
+		cr.fill
+	end
+	def repeat_draw(cr)
+		cr.set_source_rgb(@color[0],@color[1],@color[2])
+		cr.rounded_rectangle(@x-@dp[2]+3,@y-@dp[2]+3,@dp[6]-6,@dp[6]-6,2,2)
 		cr.fill
 	end
 	
@@ -653,19 +714,21 @@ class Traveler #A traveler handles the source note playing and creates another t
 		@srce_origin = srce_origin
 		@dest_origin = dest.origin
 		@dest        = dest
+		@repeat      = dest.repeat
 		@travel_c    = 0
+		@iteration   = 0
 		@distance    = ((@dest_origin[0] - @srce_origin[0]).abs + (@dest_origin[1] - @srce_origin[1]).abs)/CC.grid_spacing
 		@reached     = false
 		@remove      = false
 	end
 
 	def travel
-		@travel_c += 1
+		@travel_c += 1 
 		if @travel_c == @distance
-			@reached = true
 			@dest.playing = true
+			@reached = true
 			CC.queued_note_plays << NoteSender.new(@dest.note,@dest.channel,@dest.velocity)
-		elsif @travel_c == (@distance + @dest.duration)
+		elsif @travel_c == (@distance + @dest.duration) 
 			@dest.playing = false
 			queue_removal
 		end
@@ -673,6 +736,9 @@ class Traveler #A traveler handles the source note playing and creates another t
 	
 	def queue_removal
 		CC.queued_note_stops << NoteSender.new(@dest.note,@dest.channel,0)
+		if @repeat > 0
+			CC.repeaters << Repeater.new(@dest,@repeat)
+		end
 		@remove = true
 	end
 	
@@ -683,8 +749,9 @@ class Starter #A starter handles notes that are used as starting points for path
 	def initialize(srce)
 		@travel_c     = 0
 		@srce         = srce
-		@duration     = @srce.duration
+		@duration     = srce.duration
 		@remove       = false
+		@repeat       = srce.repeat
 		@srce.playing = true
 		CC.queued_note_plays << NoteSender.new(@srce.note,@srce.channel,@srce.velocity)
 	end
@@ -694,8 +761,37 @@ class Starter #A starter handles notes that are used as starting points for path
 		if @travel_c == @duration
 			@srce.playing = false
 			CC.queued_note_stops << NoteSender.new(@srce.note,@srce.channel,0)
+			if @repeat > 0
+				CC.repeaters << Repeater.new(@srce,@repeat)
+			end
 			@remove = true
 		end
+	end
+	
+end
+
+class Repeater #A repeater handles notes that are set to repeat/arpeggiate
+	attr_reader :remove
+	def initialize(srce,count)
+		@srce   = srce
+		@count  = count
+		@dur    = srce.duration
+		@timer  = @count * @dur
+	end
+	
+	def repeat
+		if @timer == 0
+			CC.queued_note_stops << NoteSender.new(@srce.note,@srce.channel,0)
+			@srce.repeating = false
+			@remove = true
+		end
+		unless @remove == true
+			@srce.repeating = true
+			if @timer % @dur == 0
+				CC.queued_note_plays << NoteSender.new(@srce.note,@srce.channel,@srce.velocity)
+			end
+		end
+		@timer -=1
 	end
 	
 end

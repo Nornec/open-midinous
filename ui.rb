@@ -223,6 +223,7 @@ class UI_Elements
 		
 		path_builder.sensitive = false
 		prop_mod_button.sensitive = false
+		stop.sensitive = false
 		
 		tool_descrip.text  = "Select"
 		t_sig.text = "4/4"
