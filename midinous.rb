@@ -7,7 +7,6 @@ Gtk.main
 
 #TODO
 # Add "transform" as a play mode? One point changes parms after playing? Could be any number of parameters, may require a dialog.
-# Remove the "advance" and "backtrack" tools?
 # Add logic to allow relative pitches on nodes
 #   Utilize the SCALES constant
 # Reconfigure window logic to allow closing. Check notes on event handler

@@ -186,6 +186,9 @@ class UI_Elements
 		def confirmer_label
 			@builder.get_object("confirmer_label")
 		end
+		def scale_label
+			@builder.get_object("scale_label")
+		end
 		
 		#Point Property Tree
 		def prop_list_model
@@ -213,6 +216,93 @@ class UI_Elements
 			@builder.get_object("prop_list_selection")
 		end
 		
+		#Scale Selection Combo Box
+		def scale_combo
+			@builder.get_object("scale_combo")
+		end
+		def scale_tree_model
+			@builder.get_object("scale_tree_model")
+		end
+		def scale_display
+			@builder.get_object("scale_display")
+		end
+		
+		scale_cat_1 = scale_tree_model.append(nil)
+			scale_cat_1_sub_01 = scale_tree_model.append(scale_cat_1)
+			scale_cat_1_sub_02 = scale_tree_model.append(scale_cat_1)
+			scale_cat_1_sub_03 = scale_tree_model.append(scale_cat_1)
+			scale_cat_1_sub_04 = scale_tree_model.append(scale_cat_1)
+			scale_cat_1_sub_05 = scale_tree_model.append(scale_cat_1)
+			scale_cat_1_sub_06 = scale_tree_model.append(scale_cat_1)
+		scale_cat_2  = scale_tree_model.append(nil)
+			scale_cat_2_sub_01 = scale_tree_model.append(scale_cat_2)		
+			scale_cat_2_sub_02 = scale_tree_model.append(scale_cat_2)		
+			scale_cat_2_sub_03 = scale_tree_model.append(scale_cat_2)		
+			scale_cat_2_sub_04 = scale_tree_model.append(scale_cat_2)		
+			scale_cat_2_sub_05 = scale_tree_model.append(scale_cat_2)		
+			scale_cat_2_sub_06 = scale_tree_model.append(scale_cat_2)		
+			scale_cat_2_sub_07 = scale_tree_model.append(scale_cat_2)		
+			scale_cat_2_sub_08 = scale_tree_model.append(scale_cat_2)		
+			scale_cat_2_sub_09 = scale_tree_model.append(scale_cat_2)		
+		scale_cat_3 = scale_tree_model.append(nil)
+			scale_cat_3_sub_01 = scale_tree_model.append(scale_cat_3)
+			scale_cat_3_sub_02 = scale_tree_model.append(scale_cat_3)
+			scale_cat_3_sub_03 = scale_tree_model.append(scale_cat_3)
+			scale_cat_3_sub_04 = scale_tree_model.append(scale_cat_3)
+			scale_cat_3_sub_05 = scale_tree_model.append(scale_cat_3)
+			scale_cat_3_sub_06 = scale_tree_model.append(scale_cat_3)		
+		scale_cat_4 = scale_tree_model.append(nil)
+			scale_cat_4_sub_01 = scale_tree_model.append(scale_cat_4)
+			scale_cat_4_sub_02 = scale_tree_model.append(scale_cat_4)
+			scale_cat_4_sub_03 = scale_tree_model.append(scale_cat_4)
+			scale_cat_4_sub_04 = scale_tree_model.append(scale_cat_4)
+			scale_cat_4_sub_05 = scale_tree_model.append(scale_cat_4)
+			scale_cat_4_sub_06 = scale_tree_model.append(scale_cat_4)
+		scale_cat_5 = scale_tree_model.append(nil)
+			scale_cat_5_sub_01 = scale_tree_model.append(scale_cat_5)
+			scale_cat_5_sub_02 = scale_tree_model.append(scale_cat_5)
+			scale_cat_5_sub_03 = scale_tree_model.append(scale_cat_5)
+			scale_cat_5_sub_04 = scale_tree_model.append(scale_cat_5)
+			scale_cat_5_sub_05 = scale_tree_model.append(scale_cat_5)
+		
+		scale_cat_1 [0] = "Pentatonic"
+				scale_cat_1_sub_01[0] = "Hirajoshi"           
+				scale_cat_1_sub_02[0] = "Insen"               
+				scale_cat_1_sub_03[0] = "Iwato"               
+				scale_cat_1_sub_04[0] = "Pentatonic Major"    
+				scale_cat_1_sub_05[0] = "Pentatonic Minor"    
+				scale_cat_1_sub_06[0] = "Two Semitone Tritone"
+		scale_cat_2 [0] = "Traditional"
+				scale_cat_2_sub_01[0] = "Aeolian"         
+				scale_cat_2_sub_02[0] = "Dorian"          
+				scale_cat_2_sub_03[0] = "Harmonic Major"  
+				scale_cat_2_sub_04[0] = "Harmonic Minor"  
+				scale_cat_2_sub_05[0] = "Ionian"          
+				scale_cat_2_sub_06[0] = "Locrian"         
+				scale_cat_2_sub_07[0] = "Lydian"          
+				scale_cat_2_sub_08[0] = "Mixolydian"      
+				scale_cat_2_sub_09[0] = "Phrygian"
+		scale_cat_3 [0] = "Modified Traditional"
+				scale_cat_3_sub_01[0] =	"Altered"         			
+				scale_cat_3_sub_02[0] =	"Half Diminished" 			
+				scale_cat_3_sub_03[0] =	"Locrian Major"   			
+				scale_cat_3_sub_04[0] =	"Lydian Augmented"			
+				scale_cat_3_sub_05[0] =	"Melodic Minor"   			
+				scale_cat_3_sub_06[0] =	"Ukrainian Dorian"			
+		scale_cat_4 [0] = "Exotic"
+				scale_cat_4_sub_01[0] = "Augmented" 
+				scale_cat_4_sub_02[0] = "Blues"  
+				scale_cat_4_sub_03[0] = "Flamenco"  
+				scale_cat_4_sub_04[0] = "Hungarian" 
+				scale_cat_4_sub_05[0] = "Persian"   
+				scale_cat_4_sub_06[0] = "Prometheus"
+		scale_cat_5 [0] = "Mathematical"
+				scale_cat_5_sub_01[0] = "Chromatic"
+				scale_cat_5_sub_02[0] = "Octatonic Whole"
+				scale_cat_5_sub_03[0] = "Octatonic Half" 
+				scale_cat_5_sub_04[0] = "Tritone" 
+				scale_cat_5_sub_05[0] = "Whole Tone"
+
 		
 		#Initialize the elements of the screen
 		midinous.add_events("key-press-mask")
@@ -234,6 +324,7 @@ class UI_Elements
 		property_label.markup   = "<b>#{property_label.text}</b>"
 		modify_label.markup     = "<b>#{modify_label.text}</b>"
 		t_sig_label.markup      = "<b>#{t_sig_label.text}</b>"
+		scale_label.markup      = "<b>#{scale_label.text}</b>"
 		
 		#canvas.add_events(Gdk::EventMask::BUTTON_PRESS_MASK.nick) #This points to a nickname, basically a string like "button-press-mask" in this case
 	end

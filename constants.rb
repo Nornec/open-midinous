@@ -47,3 +47,45 @@ SCALES = {
 "Ukrainian Dorian"     => [2,1,3,1,2,1,2],
 "Whole Tone"           => [2,2,2,2,2,2]
 }
+
+=begin
+
+Pentatonic
+	"Hirajoshi"            
+	"Insen"               
+	"Iwato"               
+	"Pentatonic Major"    
+	"Pentatonic Minor"     
+	"Two Semitone Tritone" 
+Traditional
+	"Aeolian"         
+	"Dorian"          
+	"Harmonic Major"  
+	"Harmonic Minor"  
+	"Ionian"          
+	"Locrian"         
+	"Lydian"          
+	"Mixolydian"      
+	"Phrygian"
+Modified Traditional
+	"Altered"             
+	"Half Diminished"     
+	"Locrian Major"       
+	"Lydian Augmented"    
+	"Melodic Minor"       
+	"Ukrainian Dorian"    
+Exotic
+	"Augmented"           
+	"Blues"  
+	"Flamenco"  
+	"Hungarian" 
+	"Persian"        
+	"Prometheus" 	
+Mathematical
+	"Chromatic"
+	"Octatonic Whole"
+	"Octatonic Half" 
+	"Tritone" 
+	"Whole Tone"
+
+=end

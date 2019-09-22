@@ -99,8 +99,8 @@ module Event_Router
 	UI::canvas.signal_connect("beat-note-up")                { CC.canvas_grid_change("++")                }
 	UI::canvas.signal_connect("beat-note-dn")                { CC.canvas_grid_change("--")                }
 	UI::canvas.signal_connect("travel-event")                { CC.canvas_travel                           }
-	UI::canvas.signal_connect("cycle-play-mode-bck")        { Pl.play_mode_rotate(-1)                    }
-	UI::canvas.signal_connect("cycle-play-mode-fwd")        { Pl.play_mode_rotate(1)                     }
+	UI::canvas.signal_connect("cycle-play-mode-bck")         { Pl.play_mode_rotate(-1)                    }
+	UI::canvas.signal_connect("cycle-play-mode-fwd")         { Pl.play_mode_rotate(1)                     }
 	UI::canvas.signal_connect("set-start")                   { Pl.set_start                               }
 end
 

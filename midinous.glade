@@ -198,7 +198,7 @@
     <property name="page_increment">10</property>
   </object>
   <object class="GtkAdjustment" id="prop_list_scroll_v">
-    <property name="upper">600</property>
+    <property name="upper">1200</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
@@ -210,6 +210,12 @@
       <column type="gchararray"/>
     </columns>
   </object>
+	<object class="GtkTreeStore" id="scale_tree_model">
+		<columns>
+			<!-- column-name scale_type -->
+      <column type="gchararray"/>
+		</columns>
+	</object>
 	<object class="GtkAdjustment" id="tempo_adj">
     <property name="lower">1</property>
     <property name="upper">999</property>
@@ -217,6 +223,13 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
+	<object class="GtkAdjustment" id="root_adj">
+    <property name="lower">0</property>
+    <property name="upper">127</property>
+    <property name="value">60</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">5</property>
+  </object>	
   <object class="GtkImage" id="main_tool_img_1">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -482,32 +495,6 @@
                     <property name="position">1</property>
                   </packing>
                 </child>
-                <child>
-                  <object class="GtkButton">
-                    <property name="label" translatable="yes">Backtrack</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="receives_default">True</property>
-                  </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkButton">
-                    <property name="label" translatable="yes">Advance</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="receives_default">True</property>
-                  </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">3</property>
-                  </packing>
-                </child>
               </object>
               <packing>
                 <property name="x">965</property>
@@ -551,7 +538,7 @@
             <child>
               <object class="GtkFixed">
                 <property name="width_request">259</property>
-                <property name="height_request">880</property>
+                <property name="height_request">1080</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <child>
@@ -579,13 +566,13 @@
                   </object>
                   <packing>
                     <property name="x">5</property>
-                    <property name="y">346</property>
+                    <property name="y">546</property>
                   </packing>
                 </child>
                 <child>
 									<object class="GtkScrolledWindow" id="prop_list_window">
-										<property name="width_request">252</property>
-										<property name="height_request">271</property>
+										<property name="width_request">241</property>
+										<property name="height_request">471</property>
 										<property name="visible">True</property>
 										<property name="can_focus">False</property>
 										<property name="shadow_type">in</property>
@@ -607,7 +594,7 @@
 																<property name="min_width">100</property>
 																<property name="title" translatable="yes">Property</property>
 																<property name="clickable">True</property>
-																<property name="sort_indicator">True</property>
+																<property name="sort_indicator">False</property>
 																<property name="sort_column_id">0</property>
 																<child>
 																	<object class="GtkCellRendererText" id="prop_list_col1">
@@ -623,6 +610,7 @@
 															<object class="GtkTreeViewColumn" id="prop_list_col2_h">
 																<property name="resizable">True</property>
 																<property name="title" translatable="yes">Value</property>
+																<property name="sort_indicator">False</property>
 																<property name="sort_column_id">1</property>
 																<child>
 																	<object class="GtkCellRendererText" id="prop_list_col2">
@@ -657,13 +645,13 @@
                   </object>
                   <packing>
                     <property name="x">5</property>
-                    <property name="y">313</property>
+                    <property name="y">513</property>
                   </packing>
                 </child>
                 <child>
                   <object class="GtkButton" id="prop_mod_button">
                     <property name="label" translatable="yes">Apply</property>
-                    <property name="width_request">70</property>
+                    <property name="width_request">65</property>
                     <property name="height_request">67</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
@@ -671,7 +659,7 @@
                   </object>
                   <packing>
                     <property name="x">181</property>
-                    <property name="y">315</property>
+                    <property name="y">515</property>
                   </packing>
                 </child>
                 <child>
@@ -687,7 +675,7 @@
                   </object>
                   <packing>
                     <property name="x">1</property>
-                    <property name="y">386</property>
+                    <property name="y">586</property>
                   </packing>
                 </child>
                 <child>
@@ -705,7 +693,7 @@
                   </object>
                   <packing>
                     <property name="x">66</property>
-                    <property name="y">385</property>
+                    <property name="y">585</property>
                   </packing>
                 </child>
 								<child>
@@ -721,7 +709,7 @@
                   </object>
                   <packing>
                     <property name="x">5</property>
-                    <property name="y">430</property>
+                    <property name="y">630</property>
                   </packing>
                 </child>
                 <child>
@@ -740,9 +728,63 @@
                   </object>
                   <packing>
                     <property name="x">130</property>
-                    <property name="y">430</property>
+                    <property name="y">630</property>
                   </packing>
                 </child>
+								<child>
+                  <object class="GtkLabel" id="scale_label">
+                    <property name="width_request">63</property>
+                    <property name="height_request">32</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Scale and Root</property>
+                    <attributes>
+                      <attribute name="size" value="200"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="x">5</property>
+                    <property name="y">670</property>
+                  </packing>
+                </child>
+								<child>
+                  <object class="GtkSpinButton" id="root_select">
+                    <property name="width_request">116</property>
+                    <property name="height_request">34</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="adjustment">root_adj</property>
+                    <property name="climb_rate">5</property>
+                    <property name="snap_to_ticks">True</property>
+                    <property name="numeric">True</property>
+                    <property name="value">60</property>
+                  </object>
+                  <packing>
+                    <property name="x">130</property>
+                    <property name="y">670</property>
+                  </packing>
+                </child>
+								<child>
+									<object class="GtkComboBox" id="scale_combo">
+										<property name="width_request">242</property>
+										<property name="height_request">40</property>
+										<property name="visible">True</property>
+										<property name="can_focus">True</property>
+										<property name="model">scale_tree_model</property>
+										<child>
+											<object class="GtkCellRendererText" id="scale_display">
+												<property name="size">16</property>
+											</object>
+											<attributes>
+												<attribute name="text">0</attribute>
+											</attributes>
+										</child>
+									</object>
+									<packing>
+										<property name="x">4</property>
+										<property name="y">710</property>
+									</packing>
+								</child>
               </object>
               <packing>
                 <property name="x">1502</property>

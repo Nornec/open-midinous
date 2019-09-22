@@ -137,8 +137,13 @@ class Point_Logic
 		path_modes = ["horz","vert"]
 		signal_states = ["true","false"]
 		case @curr_prop
-			when "Note", "Velocity"
-				if text.to_i >= 1 && text.to_i <= 127
+			when "Note"
+				if (text.to_i >= 1 && text.to_i <= 127) || (text.match(/^([+]|-)[0-9]{1,2}$/))
+						 UI::prop_mod_button.sensitive = true
+				else UI::prop_mod_button.sensitive = false
+				end
+			when "Velocity"
+				if (text.to_i >= 1 && text.to_i <= 127)
 						 UI::prop_mod_button.sensitive = true
 				else UI::prop_mod_button.sensitive = false
 				end
@@ -191,7 +196,15 @@ class Point_Logic
 	def modify_properties(points)
 		case @curr_prop
 			when "Note"
-				points.find_all(&:selected).each {|p| p.note = UI::prop_mod.text.to_i}
+				points.find_all(&:selected).each do |p| 
+					if UI::prop_mod.text.match(/^([+]|-)[0-9]{1,2}$/) && p.path_from.length > 0
+						p.note = UI::prop_mod.text
+						p.use_rel = true
+					elsif (UI::prop_mod.text.to_i >= 1 && UI::prop_mod.text.to_i <= 127)
+						p.note = UI::prop_mod.text.to_i
+						p.use_rel = false
+					end
+				end
 			when "Velocity"
 				points.find_all(&:selected).each {|p| p.velocity = UI::prop_mod.text.to_i}
 			when "Duration (beats)"
@@ -315,7 +328,8 @@ class NousPoint
 	attr_accessor :source, :color, :path_to, :path_from, :note, :x, :y,
 	              :velocity, :duration, :default_color, :path_mode, 
 								:traveler_start, :channel, :playing, :play_modes,
-								:path_to_memory, :repeat, :repeat_memory, :repeating
+								:path_to_memory, :repeat, :repeat_memory, :repeating,
+								:use_rel
 	attr_reader   :selected, :pathable, :origin, :bounds
 	              
 	
@@ -344,6 +358,7 @@ class NousPoint
 		@selected        = false
 		@source          = false
 		@repeating       = false
+		@use_rel         = false
 		@path_to         = [] #array of references to points that are receiving a path from this point
 		@path_to_memory  = [] #memory of @path_to so that it can be reset upon stopping.
 		@portal_to       = [] #array of references to points that are played at the same time as this point

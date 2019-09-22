@@ -17,7 +17,7 @@ module Logic_Controls #various reusable functions useful for checks and math
 	
 	def sync_diff(stored_time)
 		new_time = Time.now.to_f*1000
-		return (CC.ms_per_beat - (new_time - (stored_time + CC.ms_per_beat)))
+		return (CC.ms_per_tick - (new_time - (stored_time + CC.ms_per_tick)))
 	end
 	
 	def relative_pos(xd,yd)

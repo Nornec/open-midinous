@@ -3,7 +3,7 @@ require_relative "points"
 class Canvas_Control
 	include Logic_Controls 
 	attr_accessor :nouspoints, :travelers, :repeaters, :queued_note_plays, :queued_note_stops
-	attr_reader :grid_spacing, :midi_sync, :beats, :ms_per_beat, :dragging, :start_time
+	attr_reader :grid_spacing, :midi_sync, :beats, :ms_per_tick, :dragging, :start_time
 	def initialize
 
 		@sel_box      = nil
@@ -19,10 +19,14 @@ class Canvas_Control
 		@travelers    = []
 		@starters     = []
 		@repeaters    = []
+		@scale        = "Chromatic"
+		@root_note    = 60
+		@scale_notes  = []
+		set_scale(SCALES[@scale],@root_note)
 		@midi_sync    = 0.000
 		@path_sourced = false
 		@attempt_path = false
-		@ms_per_beat  = 250.000 #default tempo of 120bpm
+		@ms_per_tick  = 125.000 #default tempo of 120bpm
 		@beats        = 4 #number of beats in a whole note -- should be reasonably between 1 and 16
 		@beat_note    = 4 #as a fraction of a whole note   -- should be between 2 and 16 via powers of 2
 		@grid_spacing = 35
@@ -31,10 +35,31 @@ class Canvas_Control
 	end
 	
 	def set_tempo(tempo)
-		@ms_per_beat = (1000 * (30 / tempo)) / (@beat_note / 4)
-		#puts @ms_per_beat
+		@ms_per_tick = (1000 * (30 / tempo)) / (@beat_note / 4)
+		#puts @ms_per_tick
 	end
-	
+	def set_scale(scale,root)
+		slen = scale.length
+		@scale_notes = []
+		@scale_notes << root
+		
+		c = 0
+		note = root
+		while note < 127
+			note += scale[c]
+			@scale_notes << note unless note > 127
+			c = (c + 1) % slen
+		end
+
+		c = 0
+		note = root
+		while note > 0
+			note -= scale.reverse[c]
+			@scale_notes << note unless note < 0
+			c = (c + 1) % slen
+		end
+		
+	end
 	def canvas_generic(string) #Used as a pseudo-handler between classes
 		case string
 		when "path" 
@@ -66,7 +91,7 @@ class Canvas_Control
 			signal_chain(n)
 		end
 		@stored_time = Time.now.to_f*1000
-		canvas_timeout(@ms_per_beat) #Start sequence
+		canvas_timeout(@ms_per_tick) #Start sequence
 	end
 
 	def canvas_timeout(secs)
@@ -95,7 +120,7 @@ class Canvas_Control
 		@queued_note_stops = []
 
 		canvas_timeout(sync_diff(@stored_time))
-		@stored_time += @ms_per_beat
+		@stored_time += @ms_per_tick
 		UI::canvas.queue_draw
 	end
 	
@@ -163,9 +188,9 @@ class Canvas_Control
 		if @beat_note != prev_beat_note
 			case dir
 			when "++"
-				@ms_per_beat /= 2
+				@ms_per_tick /= 2
 			when "--"
-				@ms_per_beat *= 2
+				@ms_per_tick *= 2
 			end
 		end
 		UI::t_sig.text = "#{@beats}/#{@beat_note}"
