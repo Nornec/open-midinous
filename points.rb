@@ -197,10 +197,13 @@ class Point_Logic
 		case @curr_prop
 			when "Note"
 				points.find_all(&:selected).each do |p| 
-					if UI::prop_mod.text.match(/^([+]|-)[0-9]{1,2}$/) && p.path_from.length > 0
+					if UI::prop_mod.text.match(/^([+]|-)[0-9]{1,2}$/)
 						p.note = UI::prop_mod.text
 						p.use_rel = true
-					elsif (UI::prop_mod.text.to_i >= 1 && UI::prop_mod.text.to_i <= 127)
+					elsif (UI::prop_mod.text.to_i >= 0 &&
+					       UI::prop_mod.text.to_i <= 127 &&
+								!(UI::prop_mod.text.include?("+") || UI::prop_mod.text.include?("-")))
+					then
 						p.note = UI::prop_mod.text.to_i
 						p.use_rel = false
 					end
@@ -289,6 +292,9 @@ class Point_Logic
 		UI::prop_mod.text = ""
 		return points
 	end
+	def delete_paths(points)
+		points.find_all {|f| !f.path_to.length.zero? && f.selected == true}.each {|n| n.path_to.reject!}
+	end
 	
 	def move_points(diff,points)
 		if move_check(diff,points)
@@ -343,9 +349,7 @@ class NousPoint
 		@color           = GREY #point color defaults to gray++
 		@path_color      = CYAN
 		@default_color   = GREY
-		@note            = 60                         #all notes start at middle c (C3)
-		@relative_note   = nil                        #String that will contain a relative shift for the node. This should override note
-		@root            = "C"                        #Only relevant for relative note
+		@note            = 60                         #all notes start at middle c (C3), can be a note or a reference
 		@velocity        = 100		                    #       ``       with 100 velocity
 		@channel         = 1                          #       ``       assigned to midi channel 1 (instrument 1, but we will refer to them as channels, not instruments)
 		@duration        = 1                          #length of note in grid points (should be considered beats)
@@ -723,88 +727,158 @@ class NousPoint
 end
 
 class Traveler #A traveler handles the source note playing and creates another traveler if the destination is reached.
-	attr_reader :remove, :dest, :dest_origin
+	attr_reader :remove, :dest, :dest_origin, :last_played_note, :played_note
 	attr_accessor :reached
-	def initialize(srce_origin,dest) #Traveler should play note when reaches destination. Should not need to create another traveler if it's a dead end.
-		@srce_origin = srce_origin
-		@dest_origin = dest.origin
+	def initialize(srce,dest,lpn) #Traveler should play note when reaches destination. Should not need to create another traveler if it's a dead end.
+		@srce        = srce
 		@dest        = dest
+		@srce_origin = srce.origin
+		@dest_origin = dest.origin
 		@repeat      = dest.repeat
 		@travel_c    = 0
 		@iteration   = 0
+		@last_played_note = lpn
+		@played_note = nil
 		@distance    = ((@dest_origin[0] - @srce_origin[0]).abs + (@dest_origin[1] - @srce_origin[1]).abs)/CC.grid_spacing
 		@reached     = false
 		@remove      = false
 	end
 
 	def travel
-		@travel_c += 1 
+		@travel_c += 1
 		if @travel_c == @distance
 			@dest.playing = true
 			@reached = true
-			CC.queued_note_plays << NoteSender.new(@dest.note,@dest.channel,@dest.velocity)
+			play_check(@srce.use_rel,@dest.use_rel)
 		elsif @travel_c == (@distance + @dest.duration) 
 			@dest.playing = false
 			queue_removal
 		end
 	end
 	
+	def play_check(srce_rel,dest_rel)
+		if !dest_rel
+			@played_note = @dest.note
+			play_note
+		elsif  srce_rel && dest_rel
+			@played_note = @last_played_note + @dest.note.to_i
+			play_relative
+		elsif !srce_rel && dest_rel
+			@played_note = @srce.note.to_i + @dest.note.to_i
+			play_relative
+		end
+	end
+	def play_note
+		CC.queued_note_plays << NoteSender.new(@played_note,@dest.channel,@dest.velocity)
+	end
+	def play_relative
+		#search the current scales variable and round to nearest note.
+		if @dest.note.include?("+")
+			@played_note = CC.scale_notes.find {|f| f >= @played_note}
+		elsif @dest.note.include?("-")
+			@played_note = CC.scale_notes.reverse_each.find {|f| f <= @played_note}
+		end
+		@played_note = 0 if @played_note < 0
+		@played_note = 127 if @played_note > 127
+		
+		CC.queued_note_plays << NoteSender.new(@played_note,@dest.channel,@dest.velocity)
+	end
+	
 	def queue_removal
-		CC.queued_note_stops << NoteSender.new(@dest.note,@dest.channel,0)
+		CC.queued_note_stops << NoteSender.new(@played_note,@dest.channel,0)
 		if @repeat > 0
-			CC.repeaters << Repeater.new(@dest,@repeat)
+			CC.repeaters << Repeater.new(@dest,@repeat,@played_note)
 		end
 		@remove = true
 	end
 	
 end
 
-class Starter #A starter handles notes that are used as starting points for paths.
-	attr_reader :remove
-	def initialize(srce)
-		@travel_c     = 0
-		@srce         = srce
-		@duration     = srce.duration
-		@remove       = false
-		@repeat       = srce.repeat
-		@srce.playing = true
-		CC.queued_note_plays << NoteSender.new(@srce.note,@srce.channel,@srce.velocity)
+class Starter #A starter handles notes that are used as starting points for paths and point jumps for portals
+	attr_reader :remove, :last_played_note
+	def initialize(portal_srce,srce,lpn)
+		@travel_c         = 0
+		@srce             = srce
+		@portal_srce      = portal_srce
+		@duration         = srce.duration
+		@remove           = false
+		@repeat           = srce.repeat
+		@played_note      = nil
+		@last_played_note = lpn
+		
+		@srce.playing     = true	
+		if @portal_srce != nil
+			play_check(@portal_srce.use_rel,@srce.use_rel)
+		else
+			@played_note = @srce.note
+			play_note
+		end
+		
 	end
 	
 	def travel
 		@travel_c += 1
 		if @travel_c == @duration
 			@srce.playing = false
-			CC.queued_note_stops << NoteSender.new(@srce.note,@srce.channel,0)
 			if @repeat > 0
-				CC.repeaters << Repeater.new(@srce,@repeat)
+				CC.repeaters << Repeater.new(@srce,@repeat,@played_note)
 			end
+			CC.queued_note_stops << NoteSender.new(@played_note,@srce.channel,0)
+		else
 			@remove = true
 		end
 	end
+
+	def play_check(portal_srce_rel,srce_rel)
+		if !srce_rel
+			@played_note = @srce.note
+			play_note
+		elsif  portal_srce_rel && srce_rel
+			@played_note = @last_played_note + @srce.note.to_i
+			play_relative
+		elsif !portal_srce_rel && srce_rel
+			@played_note = @portal_srce.note.to_i + @srce.note.to_i
+			play_relative
+		end
+	end
+	def play_note
+		CC.queued_note_plays << NoteSender.new(@played_note,@srce.channel,@srce.velocity)
+	end
+	def play_relative
+		#search the current scales variable and round to nearest note.
+		if @srce.note.include?("+")
+			@played_note = CC.scale_notes.find {|f| f >= @played_note}
+		elsif @srce.note.include?("-")
+			@played_note = CC.scale_notes.reverse_each.find {|f| f <= @played_note}
+		end
+		@played_note = 0   if @played_note < 0
+		@played_note = 127 if @played_note > 127
+		
+		CC.queued_note_plays << NoteSender.new(@played_note,@srce.channel,@srce.velocity)
+	end	
 	
 end
 
 class Repeater #A repeater handles notes that are set to repeat/arpeggiate
 	attr_reader :remove
-	def initialize(srce,count)
+	def initialize(srce,count,played_note)
 		@srce   = srce
-		@count  = count
 		@dur    = srce.duration
-		@timer  = @count * @dur
+		@timer  = count * @dur
+		@played_note = played_note
+		repeat
 	end
 	
 	def repeat
 		if @timer == 0
-			CC.queued_note_stops << NoteSender.new(@srce.note,@srce.channel,0)
+			#needs relative logic
+			CC.queued_note_stops << NoteSender.new(@played_note,@srce.channel,0)
 			@srce.repeating = false
 			@remove = true
 		end
 		unless @remove == true
 			@srce.repeating = true
-			if @timer % @dur == 0
-				CC.queued_note_plays << NoteSender.new(@srce.note,@srce.channel,@srce.velocity)
-			end
+			CC.queued_note_plays << NoteSender.new(@played_note,@srce.channel,@srce.velocity) if @timer % @dur == 0
 		end
 		@timer -=1
 	end

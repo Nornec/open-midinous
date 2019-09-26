@@ -49,32 +49,35 @@ Times = Time.new
 module Event_Router
 	extend Key_Bindings
 	#For key bindings
-	UI::midinous.signal_connect("key-press-event")           { |obj, event| route_key(event) }
-	
-	#For generic events
-	UI::tempo.signal_connect("value-changed")                { |obj| CC.set_tempo(obj.value) }
+	UI::midinous.signal_connect("key-press-event")            { |obj, event| route_key(event) }
+																													  
+	#For general events                                       
+	UI::tempo.signal_connect("value-changed")                 { |obj| CC.set_tempo(obj.value) }
+	UI::root_select.signal_connect("value-changed")           { |obj| CC.set_scale(UI::scale_combo.active_iter[0],obj.value) }
 	
 	#For keys
-	UI::main_tool_1.signal_connect("keybinding-event")       {Active_Tool.set_tool(1)}
-	UI::main_tool_2.signal_connect("keybinding-event")       {Active_Tool.set_tool(2)}
-	UI::main_tool_3.signal_connect("keybinding-event")       {Active_Tool.set_tool(3)}
-	UI::main_tool_4.signal_connect("keybinding-event")       {Active_Tool.set_tool(4)}
-	UI::path_builder.signal_connect("keybinding-event")      {CC.canvas_generic("path")}
-	UI::prop_mod.signal_connect("changed")                   {Pl.check_input(UI::prop_mod.text)}
-	UI::prop_mod.signal_connect("keybinding-event")          {CC.canvas_generic("prop")}
-	UI::stop.signal_connect("keybinding-event")              {CC.canvas_stop}
-	UI::play.signal_connect("keybinding-event")              {CC.canvas_play}
+	UI::main_tool_1.signal_connect("keybinding-event")        {Active_Tool.set_tool(1)}
+	UI::main_tool_2.signal_connect("keybinding-event")        {Active_Tool.set_tool(2)}
+	UI::main_tool_3.signal_connect("keybinding-event")        {Active_Tool.set_tool(3)}
+	UI::main_tool_4.signal_connect("keybinding-event")        {Active_Tool.set_tool(4)}
+	UI::path_builder.signal_connect("keybinding-event")       {CC.canvas_generic("path")}
+	UI::prop_mod.signal_connect("changed")                    {Pl.check_input(UI::prop_mod.text)}
+	UI::prop_mod.signal_connect("keybinding-event")           {CC.canvas_generic("prop")}
+	UI::stop.signal_connect("keybinding-event")               {CC.canvas_stop}
+	UI::play.signal_connect("keybinding-event")               {CC.canvas_play}
 	
 	#For clicks
-	UI::main_tool_1.signal_connect("button-press-event")     {Active_Tool.set_tool(1)}
-	UI::main_tool_2.signal_connect("button-press-event")     {Active_Tool.set_tool(2)}
-	UI::main_tool_3.signal_connect("button-press-event")     {Active_Tool.set_tool(3)}
-	UI::main_tool_4.signal_connect("button-press-event")     {Active_Tool.set_tool(4)}
-	UI::path_builder.signal_connect("button-press-event")    {CC.canvas_generic("path")}
-	UI::prop_list_selection.signal_connect("changed")    	   {Pl.prop_list_select(UI::prop_list_selection.selected)}
-	UI::prop_mod_button.signal_connect("button-press-event") {CC.canvas_generic("prop")}
-	UI::stop.signal_connect("button-press-event")            {CC.canvas_stop}
-	UI::play.signal_connect("button-press-event")            {CC.canvas_play}
+	UI::main_tool_1.signal_connect("button-press-event")      {Active_Tool.set_tool(1)}
+	UI::main_tool_2.signal_connect("button-press-event")      {Active_Tool.set_tool(2)}
+	UI::main_tool_3.signal_connect("button-press-event")      {Active_Tool.set_tool(3)}
+	UI::main_tool_4.signal_connect("button-press-event")      {Active_Tool.set_tool(4)}
+	UI::path_builder.signal_connect("button-press-event")     {CC.canvas_generic("path")}
+	UI::prop_list_selection.signal_connect("changed")    	    {Pl.prop_list_select(UI::prop_list_selection.selected)}
+	UI::prop_mod_button.signal_connect("button-press-event")  {CC.canvas_generic("prop")}
+	UI::stop.signal_connect("button-press-event")             {CC.canvas_stop}
+	UI::play.signal_connect("button-press-event")             {CC.canvas_play}
+	UI::scale_combo.signal_connect("changed")                 {CC.set_scale(UI::scale_combo.active_iter[0],CC.root_note)}
+
 	
 	#For file operations
 	UI::file_quit.signal_connect("button-press-event")        {UI::confirmer.visible = true}     #Confirm first with a dialog if there are unsaved changes.
@@ -89,18 +92,19 @@ module Event_Router
 	UI::confirmer_confirm.signal_connect("button-press-event"){UI::confirmer.visible = false}
 	
 	#Canvas Events
-	UI::canvas.signal_connect("delete-selected-event")       {              CC.canvas_del                 }
-	UI::canvas.signal_connect("button-press-event")          { |obj, event| CC.canvas_press(event)        }
-	UI::canvas.signal_connect("motion-notify-event")         { |obj, event| CC.canvas_drag(obj,event)     }
-	UI::canvas.signal_connect("button-release-event")        { |obj, event| CC.canvas_release(obj,event)  }                             
-	UI::canvas.signal_connect("draw")                        { |obj, cr|    CC.canvas_draw(cr)            }
-	UI::canvas.signal_connect("beat-up")                     { CC.canvas_grid_change("+")                 }
-	UI::canvas.signal_connect("beat-dn")                     { CC.canvas_grid_change("-")                 }
-	UI::canvas.signal_connect("beat-note-up")                { CC.canvas_grid_change("++")                }
-	UI::canvas.signal_connect("beat-note-dn")                { CC.canvas_grid_change("--")                }
-	UI::canvas.signal_connect("travel-event")                { CC.canvas_travel                           }
-	UI::canvas.signal_connect("cycle-play-mode-bck")         { Pl.play_mode_rotate(-1)                    }
-	UI::canvas.signal_connect("cycle-play-mode-fwd")         { Pl.play_mode_rotate(1)                     }
-	UI::canvas.signal_connect("set-start")                   { Pl.set_start                               }
+
+	UI::canvas.signal_connect("button-press-event")           { |obj, event| CC.canvas_press(event) }
+	UI::canvas.signal_connect("motion-notify-event")          { |obj, event| CC.canvas_drag(obj,event) }
+	UI::canvas.signal_connect("button-release-event")         { |obj, event| CC.canvas_release(obj,event) }                             
+	UI::canvas.signal_connect("draw")                         { |obj, cr|    CC.canvas_draw(cr) }
+	UI::canvas.signal_connect("delete-selected-event")        {CC.canvas_del}	
+	UI::canvas.signal_connect("beat-up")                      {CC.canvas_grid_change("+")}
+	UI::canvas.signal_connect("beat-dn")                      {CC.canvas_grid_change("-")}
+	UI::canvas.signal_connect("beat-note-up")                 {CC.canvas_grid_change("++")}
+	UI::canvas.signal_connect("beat-note-dn")                 {CC.canvas_grid_change("--")}
+	UI::canvas.signal_connect("travel-event")                 {CC.canvas_travel}
+	UI::canvas.signal_connect("cycle-play-mode-bck")          {Pl.play_mode_rotate(-1)}
+	UI::canvas.signal_connect("cycle-play-mode-fwd")          {Pl.play_mode_rotate(1)}
+	UI::canvas.signal_connect("set-start")                    {Pl.set_start}
 end
 

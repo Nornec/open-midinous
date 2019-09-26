@@ -100,6 +100,9 @@ class UI_Elements
 		def tempo_adj
 			@builder.get_object("tempo_adj")
 		end
+		def root_adj
+			@builder.get_object("root_adj")
+		end
 		
 		#Buttons
 		def main_tool_1
@@ -128,6 +131,9 @@ class UI_Elements
 		end
 		def tempo
 			@builder.get_object("tempo")
+		end
+		def root_select
+			@builder.get_object("root_select")
 		end
 		def file_operation
 			@builder.get_object("file_operation")
@@ -264,7 +270,7 @@ class UI_Elements
 			scale_cat_5_sub_03 = scale_tree_model.append(scale_cat_5)
 			scale_cat_5_sub_04 = scale_tree_model.append(scale_cat_5)
 			scale_cat_5_sub_05 = scale_tree_model.append(scale_cat_5)
-		
+
 		scale_cat_1 [0] = "Pentatonic"
 				scale_cat_1_sub_01[0] = "Hirajoshi"           
 				scale_cat_1_sub_02[0] = "Insen"               
@@ -302,7 +308,8 @@ class UI_Elements
 				scale_cat_5_sub_03[0] = "Octatonic Half" 
 				scale_cat_5_sub_04[0] = "Tritone" 
 				scale_cat_5_sub_05[0] = "Whole Tone"
-
+		scale_combo.active = 4
+		scale_combo.active_iter = scale_cat_5_sub_01
 		
 		#Initialize the elements of the screen
 		midinous.add_events("key-press-mask")

@@ -2,8 +2,9 @@ require_relative "points"
 
 class Canvas_Control
 	include Logic_Controls 
-	attr_accessor :nouspoints, :travelers, :repeaters, :queued_note_plays, :queued_note_stops
-	attr_reader :grid_spacing, :midi_sync, :beats, :ms_per_tick, :dragging, :start_time
+	attr_accessor :nouspoints, :travelers, :repeaters, :queued_note_plays, :queued_note_stops, :root_note
+	attr_reader :grid_spacing, :midi_sync, :beats, :ms_per_tick, :dragging, :start_time, 
+              :root_note, :scale_notes, :scale
 	def initialize
 
 		@sel_box      = nil
@@ -22,7 +23,7 @@ class Canvas_Control
 		@scale        = "Chromatic"
 		@root_note    = 60
 		@scale_notes  = []
-		set_scale(SCALES[@scale],@root_note)
+		set_scale(@scale,@root_note)
 		@midi_sync    = 0.000
 		@path_sourced = false
 		@attempt_path = false
@@ -38,7 +39,9 @@ class Canvas_Control
 		@ms_per_tick = (1000 * (30 / tempo)) / (@beat_note / 4)
 		#puts @ms_per_tick
 	end
-	def set_scale(scale,root)
+	def set_scale(scale_text,root)
+
+		scale = SCALES[scale_text]
 		slen = scale.length
 		@scale_notes = []
 		@scale_notes << root
@@ -58,8 +61,10 @@ class Canvas_Control
 			@scale_notes << note unless note < 0
 			c = (c + 1) % slen
 		end
-		
+		@scale_notes.sort!
+
 	end
+	
 	def canvas_generic(string) #Used as a pseudo-handler between classes
 		case string
 		when "path" 
@@ -85,10 +90,10 @@ class Canvas_Control
 		end
 
 		@nouspoints.find_all(&:traveler_start).each do |n|
-			@starters << Starter.new(n)
+			@starters << Starter.new(nil,n,nil)
 			UI::canvas.queue_draw
 			@queued_note_plays.each {|o| o.play}
-			signal_chain(n)
+			signal_chain(n,n.note)
 		end
 		@stored_time = Time.now.to_f*1000
 		canvas_timeout(@ms_per_tick) #Start sequence
@@ -108,7 +113,7 @@ class Canvas_Control
 		@travelers.each {|t| t.travel}
 		@repeaters.each {|r| r.repeat}
 		@travelers.find_all(&:reached).each do |t|
-			signal_chain(t.dest)
+			signal_chain(t.dest,t.played_note) #Pass the last played note here. Gather the played note from the first traveler creation
 			t.reached = false
 		end
 		
@@ -126,36 +131,41 @@ class Canvas_Control
 	
 	def canvas_stop
 		@playing = false
-		@travelers = []
+		
 		@starters  = []
 		@repeaters = []
 		@queued_note_plays = []
 		@queued_note_stops = []
+		@nouspoints.find_all {|n| n.path_to.length > 1}.each {|p| p.reset_path_to}
+		UI::canvas.queue_draw
+
 		@nouspoints.each do |n|
 			n.playing = false
 			n.repeating = false
-			Pm.note_rlse(n.channel,n.note)
+			Pm.note_rlse(n.channel,n.note) unless n.note.to_s.include?("+") || n.note.to_s.include?("-")
 		end
-		@nouspoints.find_all {|n| n.path_to.length > 1}.each {|p| p.reset_path_to}
-		UI::canvas.queue_draw
+		@travelers.each do |t|
+			Pm.note_rlse(t.dest.channel,t.played_note)
+		end
+		@travelers = []
 		UI::stop.sensitive = false
 		UI::play.sensitive = true
 
 	end
 	
-	def signal_chain(point)
+	def signal_chain(point,pn)
 		case point.play_modes[0]
 		when "robin"
 			p = point.path_to.first
 			if p
-				@travelers << Traveler.new(point.origin,p)
+				@travelers << Traveler.new(point,p,pn)
 				point.path_to.rotate!
 			end
 		when "split"
-			point.path_to.each {|p| @travelers << Traveler.new(point.origin,p)}
+			point.path_to.each {|p| @travelers << Traveler.new(point,p,pn)}
 		when "portal"
 			point.path_to.each do |p|
-				@starters << Starter.new(p)
+				@starters << Starter.new(point,p,pn)
 				UI::canvas.queue_draw
 				@queued_note_plays.each {|o| o.play}
 				signal_chain(p)
@@ -163,7 +173,7 @@ class Canvas_Control
 		when "random"
 			p = point.path_to.sample
 			if p
-				@travelers << Traveler.new(point.origin,p)
+				@travelers << Traveler.new(point,p,pn)
 				point.path_to.rotate!(rand(point.path_to.length))
 			end
 		end
