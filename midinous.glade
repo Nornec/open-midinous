@@ -7,7 +7,7 @@
 		<property name="title" translatable="yes">Confirmation</property>
 		<property name="icon_name">accessories-calculator-symbolic</property>
     <property name="can_focus">True</property>
-		<property name="deletable">False</property>
+		<property name="deletable">true</property>
     <property name="resizable">False</property>
     <property name="type_hint">dialog</property>
 		<property name="visible">False</property>
@@ -260,7 +260,7 @@
 		<property name="name">midinous_main</property>
     <property name="can_focus">False</property>
 		<property name="resizable">False</property>
-		<property name="deletable">False</property>
+		<property name="deletable">True</property>
 		<property name="title" translatable="yes">Midinous</property>
 		<property name="icon_name">accessories-calculator-symbolic</property>
     <child>

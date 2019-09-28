@@ -26,6 +26,12 @@ class GtkCanvas < Gtk::DrawingArea
 	define_signal('cycle-play-mode-bck',nil,nil,nil)
 	define_signal('cycle-play-mode-fwd',nil,nil,nil)
 	define_signal('set-start',nil,nil,nil)
+	define_signal('del-path-to',nil,nil,nil)
+	define_signal('del-path-from',nil,nil,nil)
+	define_signal('set-path-mode-h',nil,nil,nil)
+	define_signal('set-path-mode-v',nil,nil,nil)
+	define_signal('note-inc-up',nil,nil,nil)
+	define_signal('note-inc-dn',nil,nil,nil)
 end
 class GtkPropEntry < Gtk::Entry
 	type_register
@@ -37,16 +43,16 @@ end
 
 class UI_Elements
 	# Construct a Gtk::Builder instance and load our UI description
-	attr_reader :bg_buff
+	attr_reader :menu_commands,:canvas_commands
+	def initialize
+		@current_file = nil
+		@current_window = nil
+	end
 	def build_ui
 		builder_file = "./midinous.glade"
-		bg_tile = "./assets/bg.png"
 		
 		# Connect signal handlers to the constructed widgets
 		@builder = Gtk::Builder.new(:file => builder_file)
-		
-		#Set up the background tile for use
-		@bg_buff = GdkPixbuf::Pixbuf.new(:file => bg_tile)
 		
 		#Windows
 		def midinous 
@@ -233,6 +239,12 @@ class UI_Elements
 			@builder.get_object("scale_display")
 		end
 		
+		#Set up accelerators (keyboard shortcuts)
+		@menu_commands = Gtk::AccelGroup.new
+		@canvas_commands = Gtk::AccelGroup.new
+		midinous.add_accel_group(@menu_commands)
+		midinous.add_accel_group(@canvas_commands)
+		
 		scale_cat_1 = scale_tree_model.append(nil)
 			scale_cat_1_sub_01 = scale_tree_model.append(scale_cat_1)
 			scale_cat_1_sub_02 = scale_tree_model.append(scale_cat_1)
@@ -332,13 +344,77 @@ class UI_Elements
 		modify_label.markup     = "<b>#{modify_label.text}</b>"
 		t_sig_label.markup      = "<b>#{t_sig_label.text}</b>"
 		scale_label.markup      = "<b>#{scale_label.text}</b>"
-		
-		#canvas.add_events(Gdk::EventMask::BUTTON_PRESS_MASK.nick) #This points to a nickname, basically a string like "button-press-mask" in this case
-	end
 
+		#canvas.add_events(Gdk::EventMask::BUTTON_PRESS_MASK.nick) #This points to a nickname, basically a string like "button-press-mask" in this case
+
+		#Accel groups, parameter 2 is the modifier
+		# 0 - no modifier
+		# 1 - shift
+		# 2 - no modifier?
+		# 3 - shift again?
+		# 4 - cntl
+
+	end
+	def confirm(type)
+		case type
+		when "new"
+			@current_window = "new_confirm"
+		when "quit"
+			@current_window = "quit_confirm"
+		end
+		confirmer.visible = true
+	end
+	def file_oper(type)
+		case type
+		when "open"
+			@current_window = "file_open"
+			file_chooser.title = "Open"
+			file_chooser.visible = true
+		when "save"
+			@current_window = "file_save"
+			if @current_file == nil	
+				file_chooser.title = "Save"
+				file_chooser.visible = true
+			else
+				#save function
+			end
+		when "saveas"
+			@current_window = "file_saveas"
+			file_chooser.title = "Save As"
+			file_chooser.visible = true
+			UI::file_name.text = @current_file if @current_file != nil
+		end
+	end
+	def confirm_act(choice)
+		if choice == "yes"
+			case @current_window
+			when "new_confirm"
+				CC.nouspoints = []
+			when "quit_confirm"
+				Gtk.main_quit
+			end
+		end
+		confirmer.visible = false
+		canvas.queue_draw
+	end
+	def file_oper_act(choice)
+		if choice == "yes"
+			case @current_window
+			when "file_open"
+				#Set nouspoints based on file selection
+			when "file_save"
+				#Save nouspoints to a new, or existing file, only if new
+			when "file_saveas"
+				#Save nouspoints to a new, or existing, file
+			end
+		end
+		file_chooser.visible = false
+		canvas.queue_draw
+	end
 end
 
 class Tool
+	attr_reader :tool_id
 	def initialize
 		@tool_id = 1
 	end
@@ -366,10 +442,6 @@ class Tool
 				UI::tool_descrip.text = "Path"
 				UI::canvas.queue_draw
 		end
-	end
-	
-	def get_tool
-		return @tool_id
 	end
 
 end

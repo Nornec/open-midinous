@@ -8,7 +8,6 @@ require_relative "key_bindings"
 class Init_Prog
 
 	def initialize #Build the user interface, initiate the objects in the program
-		UI::midinous.signal_connect("destroy") {Gtk.main_quit}
 		UI::canvas.set_size_request(CANVAS_SIZE,CANVAS_SIZE)
 		UI::canvas_h_adj.set_upper(CANVAS_SIZE)
 		UI::canvas_v_adj.set_upper(CANVAS_SIZE)
@@ -48,6 +47,12 @@ Times = Time.new
 
 module Event_Router
 	extend Key_Bindings
+	
+	#For window keep-alives
+	UI::midinous.signal_connect("delete-event")               {true}
+	UI::file_chooser.signal_connect("delete-event")           {true}
+	UI::confirmer.signal_connect("delete-event")              {true}
+	
 	#For key bindings
 	UI::midinous.signal_connect("key-press-event")            { |obj, event| route_key(event) }
 																													  
@@ -65,6 +70,7 @@ module Event_Router
 	UI::prop_mod.signal_connect("keybinding-event")           {CC.canvas_generic("prop")}
 	UI::stop.signal_connect("keybinding-event")               {CC.canvas_stop}
 	UI::play.signal_connect("keybinding-event")               {CC.canvas_play}
+
 	
 	#For clicks
 	UI::main_tool_1.signal_connect("button-press-event")      {Active_Tool.set_tool(1)}
@@ -80,19 +86,31 @@ module Event_Router
 
 	
 	#For file operations
-	UI::file_quit.signal_connect("button-press-event")        {UI::confirmer.visible = true}     #Confirm first with a dialog if there are unsaved changes.
-	UI::file_new.signal_connect("button-press-event")         {UI::confirmer.visible = true}     #Confirm first with a dialog if there are unsaved changes.
-	UI::file_open.signal_connect("button-press-event")        {UI::file_chooser.visible = true}  #Change the label to "Open"
-	UI::file_save.signal_connect("button-press-event")        {UI::file_chooser.visible = true}  #Change the label to "Save", or save automatically if the working file exists.
-	UI::file_save_as.signal_connect("button-press-event")     {UI::file_chooser.visible = true}  #Change the label to "Save As"
-	UI::file_operation.signal_connect("button-press-event")   {UI::file_chooser.visible = false} #If open, confirm first with a dialog if there are unsaved changes. If save/save as, overwrite confirmation should automatically appear. Otherwise, use confirmer.
-	UI::file_cancel.signal_connect("button-press-event")      {UI::file_chooser.visible = false}
+	UI::file_new.signal_connect("button-press-event")         {UI.confirm("new")}       #Confirm first with a dialog if there are unsaved changes.
+	UI::file_open.signal_connect("button-press-event")        {UI.file_oper("open")}    #Change the label to "Open"
+	UI::file_save.signal_connect("button-press-event")        {UI.file_oper("save")}    #Change the label to "Save", or save automatically if the working file exists.
+	UI::file_save_as.signal_connect("button-press-event")     {UI.file_oper("saveas")}  #Change the label to "Save As"
+	UI::file_quit.signal_connect("button-press-event")        {UI.confirm("quit")}      #Confirm first with a dialog if there are unsaved changes.
+	
+	UI::confirmer_confirm.signal_connect("button-press-event"){UI.confirm_act("yes")}
+	UI::confirmer_cancel.signal_connect("button-press-event") {UI.confirm_act("no")}
+	
+	UI::file_operation.signal_connect("button-press-event")   {UI.file_oper_act("yes")} #If open, confirm first with a dialog if there are unsaved changes. If save/save as, overwrite confirmation should automatically appear. Otherwise, use confirmer.
+	UI::file_cancel.signal_connect("button-press-event")      {UI.file_oper_act("no")}
 	UI::file_chooser.signal_connect("selection-changed")      {UI::file_name.text = UI::file_chooser.filename.split("\\").last unless UI::file_chooser.filename == nil}
-	UI::confirmer_cancel.signal_connect("button-press-event") {UI::confirmer.visible = false}
-	UI::confirmer_confirm.signal_connect("button-press-event"){UI::confirmer.visible = false}
+	
+	#For accelerators
+	UI::menu_commands.connect(Gdk::Keyval::KEY_n,4,0)         {UI.confirm("new")}
+	UI::menu_commands.connect(Gdk::Keyval::KEY_o,4,0)         {UI.file_oper("open")}
+	UI::menu_commands.connect(Gdk::Keyval::KEY_s,4,0)         {UI.file_oper("save")}
+	UI::menu_commands.connect(Gdk::Keyval::KEY_s,5,0)         {UI.file_oper("saveas")}
+	UI::menu_commands.connect(Gdk::Keyval::KEY_q,4,0)         {UI.confirm("quit")}
+	UI::canvas_commands.connect(Gdk::Keyval::KEY_a,4,0)       {Pl.select_all   if Active_Tool.tool_id == 1}
+	UI::canvas_commands.connect(Gdk::Keyval::KEY_x,4,0)       {Pl.copy_points("cut")   if Active_Tool.tool_id == 1}
+	UI::canvas_commands.connect(Gdk::Keyval::KEY_c,4,0)       {Pl.copy_points("copy")  if Active_Tool.tool_id == 1}
+	UI::canvas_commands.connect(Gdk::Keyval::KEY_v,4,0)       {Pl.paste_points if Active_Tool.tool_id == 1}
 	
 	#Canvas Events
-
 	UI::canvas.signal_connect("button-press-event")           { |obj, event| CC.canvas_press(event) }
 	UI::canvas.signal_connect("motion-notify-event")          { |obj, event| CC.canvas_drag(obj,event) }
 	UI::canvas.signal_connect("button-release-event")         { |obj, event| CC.canvas_release(obj,event) }                             
@@ -106,5 +124,11 @@ module Event_Router
 	UI::canvas.signal_connect("cycle-play-mode-bck")          {Pl.play_mode_rotate(-1)}
 	UI::canvas.signal_connect("cycle-play-mode-fwd")          {Pl.play_mode_rotate(1)}
 	UI::canvas.signal_connect("set-start")                    {Pl.set_start}
+	UI::canvas.signal_connect("del-path-to")                  {Pl.delete_paths_to(CC.nouspoints)}
+	UI::canvas.signal_connect("del-path-from")                {Pl.delete_paths_from(CC.nouspoints)}
+	UI::canvas.signal_connect("set-path-mode-h")              {Pl.set_path_mode("horz")}
+	UI::canvas.signal_connect("set-path-mode-v")              {Pl.set_path_mode("vert")}
+	UI::canvas.signal_connect("note-inc-up")                  {Pl.set_note(1)}
+	UI::canvas.signal_connect("note-inc-dn")                  {Pl.set_note(-1)}
 end
 

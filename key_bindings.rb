@@ -30,6 +30,18 @@ module Key_Bindings
 					UI::canvas.signal_emit("cycle-play-mode-fwd")
 				when 97
 					UI::canvas.signal_emit("set-start")
+				when 65367 # end
+					UI::canvas.signal_emit("del-path-to")
+				when 65360 # home
+					UI::canvas.signal_emit("del-path-from")
+				when 65365 # page up
+					UI::canvas.signal_emit("set-path-mode-h")
+				when 65366 # page down
+					UI::canvas.signal_emit("set-path-mode-v")
+				when 65451, 43 # +
+					UI::canvas.signal_emit("note-inc-up")
+				when 65453, 95 # -
+					UI::canvas.signal_emit("note-inc-dn")
 			end
 			if event.keyval == 65462 && UI::play.sensitive? == true   
 				UI::play.signal_emit("keybinding-event")

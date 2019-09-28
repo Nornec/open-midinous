@@ -25,6 +25,11 @@ class Point_Logic
 		@prop_names_adv_multi = []
 		@curr_prop = nil
 		@curr_prop_adv = nil
+		@mempoints = []
+		@mempointsbuff = []
+		@copy_pos = []
+		@copy_type = nil
+		@paste_count = 0
 	end
 	
 	def add_point(r_origin,points) #Point existence search
@@ -40,6 +45,29 @@ class Point_Logic
 			t.path_from << points.find(&:source)
 		end
 		return points
+	end
+	
+	def set_path_mode(mode)
+		CC.nouspoints.find_all(&:selected).each {|n| n.path_mode = mode}
+		UI::canvas.queue_draw
+	end
+	def set_note(inc)
+		CC.nouspoints.find_all(&:selected).each do |n|
+			signed = n.note
+			val = n.note.to_i
+			val += inc
+			if val >= 0
+				n.note = "+#{val}"
+			else n.note = val
+			end
+			if !(signed.to_s.include?("+") || signed.to_s.include?("-"))
+				n.note = n.note.to_i
+				n.note = n.note.clamp(0,127)
+			end
+		end
+		UI::prop_list_model.clear
+		UI::prop_mod.text = ""
+		populate_prop(CC.nouspoints)
 	end
 	
 	def collision_check(r_origin,points)
@@ -63,6 +91,60 @@ class Point_Logic
 		end
 		populate_prop(points)
 		return points
+	end
+	
+	def select_all
+		CC.nouspoints.each {|n| n.selected = true} unless CC.nouspoints == []
+		UI::prop_list_model.clear
+		UI::prop_mod.text = ""
+		populate_prop(CC.nouspoints)
+		UI::canvas.queue_draw
+	end
+	def copy_points (type)
+		return if CC.nouspoints.empty?
+		origins = []
+		CC.nouspoints.find_all(&:selected).each {|n| origins << n.origin}
+		@copy_pos = origins.min
+		@copy_type = type
+		@mempointsbuff = CC.nouspoints.find_all(&:selected)
+	end		
+	def paste_points
+		return if @mempointsbuff.empty?
+		UI::prop_list_model.clear
+		UI::prop_mod.text = ""
+		
+		copy_lookup = {}
+
+		
+		# Clone the points and track old point => new point
+		@mempointsbuff.each do |n|
+				n.selected = false if @copy_type == "copy"
+				mem_point = n.clone
+				@mempoints << mem_point
+				copy_lookup[n.object_id] = mem_point
+		end
+
+		# Update the point relations
+		@mempoints.each do |n|
+				n.path_to   = n.path_to.map   { |pt| copy_lookup[pt.object_id] }.compact
+				n.path_from = n.path_from.map { |pf| copy_lookup[pf.object_id] }.compact
+		end
+		
+		@paste_count = 0 if @copy_type == "copy"
+		CC.nouspoints.reject!(&:selected) if @copy_type == "cut" && @paste_count == 0
+		@paste_count += 1
+
+		paste_pos = CC.mouse_last_pos
+		diff = round_to_grid([paste_pos[0] - @copy_pos[0],paste_pos[1] - @copy_pos[1]])
+		@mempoints.each {|m| m.set_destination(diff)}
+		@mempoints.each {|m| CC.nouspoints << m} if paste_check(diff,@mempoints)
+		@mempoints = []
+		populate_prop(CC.nouspoints)
+		UI::canvas.queue_draw
+	end
+	def paste_check(diff,memp)
+		memp.each {|m| return false if CC.nouspoints.any? { |n| n.origin == m.origin}}
+		return true
 	end
 	
 	def populate_prop (points)
@@ -292,8 +374,15 @@ class Point_Logic
 		UI::prop_mod.text = ""
 		return points
 	end
-	def delete_paths(points)
-		points.find_all {|f| !f.path_to.length.zero? && f.selected == true}.each {|n| n.path_to.reject!}
+	def delete_paths_to(points)
+		points.find_all {|f| !f.path_to.length.zero? && f.selected == true}.each {|n| n.path_to.each {|b| b.path_from.reject! {|g| g == n }}}
+		points.find_all {|f| !f.path_to.length.zero? && f.selected == true}.each {|n| n.path_to = []}
+		UI::canvas.queue_draw
+	end
+	def delete_paths_from(points)
+		points.find_all {|f| !f.path_from.length.zero? && f.selected == true}.each {|n| n.path_from.each {|b| b.path_to.reject! {|g| g == n }}}
+		points.find_all {|f| !f.path_from.length.zero? && f.selected == true}.each {|n| n.path_from = []}
+		UI::canvas.queue_draw
 	end
 	
 	def move_points(diff,points)
@@ -335,10 +424,9 @@ class NousPoint
 	              :velocity, :duration, :default_color, :path_mode, 
 								:traveler_start, :channel, :playing, :play_modes,
 								:path_to_memory, :repeat, :repeat_memory, :repeating,
-								:use_rel
-	attr_reader   :selected, :pathable, :origin, :bounds
-	              
-	
+								:use_rel, :selected
+	attr_reader   :pathable, :origin, :bounds
+
 	def initialize(o) #where the point was initially placed
 		@dp = [4,8,10,12,14,16,20]
 		
@@ -355,6 +443,7 @@ class NousPoint
 		@duration        = 1                          #length of note in grid points (should be considered beats)
 		@repeat          = 0                          #Number of times the node should repeat before moving on
 		@repeat_memory   = 0
+		@copy_id         = -1
 		@play_modes      = ["robin","split","portal","random"]
 		@traveler_start  = false
 		@playing         = false
@@ -778,8 +867,7 @@ class Traveler #A traveler handles the source note playing and creates another t
 		elsif @dest.note.include?("-")
 			@played_note = CC.scale_notes.reverse_each.find {|f| f <= @played_note}
 		end
-		@played_note = 0 if @played_note < 0
-		@played_note = 127 if @played_note > 127
+		@played_note = @played_note.clamp(0,127)
 		
 		CC.queued_note_plays << NoteSender.new(@played_note,@dest.channel,@dest.velocity)
 	end
@@ -851,8 +939,7 @@ class Starter #A starter handles notes that are used as starting points for path
 		elsif @srce.note.include?("-")
 			@played_note = CC.scale_notes.reverse_each.find {|f| f <= @played_note}
 		end
-		@played_note = 0   if @played_note < 0
-		@played_note = 127 if @played_note > 127
+		@played_note = @played_note.clamp(0,127)
 		
 		CC.queued_note_plays << NoteSender.new(@played_note,@srce.channel,@srce.velocity)
 	end	

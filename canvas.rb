@@ -4,9 +4,9 @@ class Canvas_Control
 	include Logic_Controls 
 	attr_accessor :nouspoints, :travelers, :repeaters, :queued_note_plays, :queued_note_stops, :root_note
 	attr_reader :grid_spacing, :midi_sync, :beats, :ms_per_tick, :dragging, :start_time, 
-              :root_note, :scale_notes, :scale
+              :root_note, :scale_notes, :scale, :mouse_last_pos
 	def initialize
-
+		@mouse_last_pos = nil
 		@sel_box      = nil
 		@selecting    = false
 		@sel_white    = [0.8,0.8,0.8,0.1] 	#selection box colors
@@ -36,7 +36,7 @@ class Canvas_Control
 	end
 	
 	def set_tempo(tempo)
-		@ms_per_tick = (1000 * (30 / tempo)) / (@beat_note / 4)
+		@ms_per_tick = (1000 * (15 / tempo)) / (@beat_note / 4)
 		#puts @ms_per_tick
 	end
 	def set_scale(scale_text,root)
@@ -108,7 +108,10 @@ class Canvas_Control
 	
 	def canvas_travel
 		@queued_note_plays = []
-		canvas_stop if !@playing || (@travelers.length == 0 && @starters.length == 0 && @repeaters.length == 0)
+		canvas_stop if !@playing               || 
+		               (@travelers.length == 0 && 
+									  @starters.length  == 0 && 
+										@repeaters.length == 0)
 		@starters.each  {|s| s.travel}
 		@travelers.each {|t| t.travel}
 		@repeaters.each {|r| r.repeat}
@@ -131,26 +134,23 @@ class Canvas_Control
 	
 	def canvas_stop
 		@playing = false
-		
 		@starters  = []
 		@repeaters = []
 		@queued_note_plays = []
 		@queued_note_stops = []
 		@nouspoints.find_all {|n| n.path_to.length > 1}.each {|p| p.reset_path_to}
 		UI::canvas.queue_draw
-
 		@nouspoints.each do |n|
 			n.playing = false
 			n.repeating = false
 			Pm.note_rlse(n.channel,n.note) unless n.note.to_s.include?("+") || n.note.to_s.include?("-")
 		end
 		@travelers.each do |t|
-			Pm.note_rlse(t.dest.channel,t.played_note)
+			Pm.note_rlse(t.dest.channel,t.played_note) unless t.played_note == nil
 		end
 		@travelers = []
 		UI::stop.sensitive = false
 		UI::play.sensitive = true
-
 	end
 	
 	def signal_chain(point,pn)
@@ -209,7 +209,7 @@ class Canvas_Control
 	
 	def canvas_press(event)
 		UI::logic_controls.focus = true
-		case Active_Tool.get_tool
+		case Active_Tool.tool_id
 			when 1
 				@sel_box   = [event.x,event.y,event.x,event.y]
 				@selecting   = true
@@ -223,6 +223,7 @@ class Canvas_Control
 	end
 	def canvas_drag(obj,event)
 		@dragging = false
+		@mouse_last_pos = [event.x,event.y]
 		case
 			when (@selecting && @sel_box)
 				@dragging = true
@@ -244,7 +245,7 @@ class Canvas_Control
 	end
 	def canvas_release(obj,event)
 		@dragging = false
-		case Active_Tool.get_tool
+		case Active_Tool.tool_id
 			when 1
 				unless !@sel_box
 					@sel_box = pos_box(@sel_box)
@@ -340,7 +341,7 @@ class Canvas_Control
 		end
 		
 		#Set the scene if the current tool does not permit a style
-		case Active_Tool.get_tool
+		case Active_Tool.tool_id
 		when 1
 			@nouspoints, @path_sourced = Pl.cancel_path(@nouspoints) 
 		when 2
