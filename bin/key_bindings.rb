@@ -28,6 +28,10 @@ module Key_Bindings
 					UI::canvas.signal_emit("cycle-play-mode-bck")
 				when 62
 					UI::canvas.signal_emit("cycle-play-mode-fwd")
+				when 44 # ,
+					UI::canvas.signal_emit('path-rotate-bck')
+				when 46 # .
+					UI::canvas.signal_emit('path-rotate-fwd')
 				when 97
 					UI::canvas.signal_emit("set-start")
 				when 65367 # end

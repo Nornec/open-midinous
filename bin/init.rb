@@ -131,5 +131,7 @@ module Event_Router
 	UI::canvas.signal_connect("set-path-mode-v")              {Pl.set_path_mode("vert")}
 	UI::canvas.signal_connect("note-inc-up")                  {Pl.set_note(1)}
 	UI::canvas.signal_connect("note-inc-dn")                  {Pl.set_note(-1)}
+	UI::canvas.signal_connect("path-rotate-bck")              {Pl.play_mode_rotate_selected("-")}
+	UI::canvas.signal_connect("path-rotate-fwd")              {Pl.play_mode_rotate_selected("+")}
 end
 

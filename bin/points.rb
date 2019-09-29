@@ -34,7 +34,7 @@ class Point_Logic
 	
 	def add_point(r_origin,points) #Point existence search
 		unless (collision_check(r_origin,points))
-			points << NousPoint.new(r_origin)
+			points << NousPoint.new(r_origin,-1)
 		end
 		return points
 	end
@@ -358,7 +358,18 @@ class Point_Logic
 			UI::canvas.queue_draw
 		end
 	end
-
+	def play_mode_rotate_selected(dir)
+		CC.nouspoints.find_all(&:selected).each do |n|
+			case dir
+			when "+"
+				n.path_to.rotate!(1)
+			when "-"
+				n.path_to.rotate!(-1)
+			end
+		end
+		UI::canvas.queue_draw
+	end
+	
 	def cancel_selected(points)
 		points.find_all(&:selected).each { |n| n.deselect }
 		return points
@@ -426,10 +437,10 @@ class NousPoint
 	              :velocity, :duration, :default_color, :path_mode, 
 								:traveler_start, :channel, :playing, :play_modes,
 								:path_to_memory, :repeat, :repeat_memory, :repeating,
-								:use_rel, :selected, :save_id
+								:use_rel, :selected, :save_id, :path_to_rels, :path_from_rels
 	attr_reader   :pathable, :origin, :bounds
 
-	def initialize(o) #where the point was initially placed
+	def initialize(o,save_id) #where the point was initially placed
 		@dp = [4,8,10,12,14,16,20]
 		
 		@x = o[0]
@@ -445,7 +456,7 @@ class NousPoint
 		@duration        = 1                          #length of note in grid points (should be considered beats)
 		@repeat          = 0                          #Number of times the node should repeat before moving on
 		@repeat_memory   = 0
-		@save_id         = -1
+		@save_id         = save_id
 		@play_modes      = ["robin","split","portal","random"]
 		@traveler_start  = false
 		@playing         = false
@@ -464,6 +475,8 @@ class NousPoint
 	end
 	
 	def set_rels
+		@path_to_rels = []
+		@path_from_rels = []
 		path_to.each {|pt| @path_to_rels << pt.save_id}
 		path_from.each {|pf| @path_from_rels << pf.save_id}
 	end
@@ -482,8 +495,10 @@ class NousPoint
 		file.write("#{@traveler_start}<~>")                       
 		file.write("#{@use_rel}<~>")               
 		file.write("#{@path_mode}<~>")
-		file.write("#{@path_to_rels}")
+		file.write("#{@path_to_rels}<~>")
 		file.write("#{@path_from_rels}")
+	end
+	def read_props(file)
 	end
 	
 	def not_selected
@@ -519,9 +534,14 @@ class NousPoint
 	end
 	
 	def reset_path_to
-		@path_to = []
-		@path_to_memory.each {|p| @path_to << p}
-		@path_to_memory = []
+		if @path_to.length != @path_to_memory.length
+			@path_to_memory = []
+			UI.confirm("path_warning")
+		else
+			@path_to = []
+			@path_to_memory.each {|p| @path_to << p}
+			@path_to_memory = []
+		end
 	end
 	
 	def set_default_color(c)
@@ -656,6 +676,8 @@ class NousPoint
 			cr.stroke
 			
 		end
+	end
+	def caret_draw(cr)
 		cr.set_dash([],0)
 		@chev_offsets = [0,0,0,0]
 		@path_from.each do |s| 
@@ -663,7 +685,6 @@ class NousPoint
 			cr.set_source_rgba(s.color[0],s.color[1],s.color[2],1)
 			cr.fill
 		end
-
 	end
 	def play_draw(cr) #If a note is playing, show a visual indicator
 		cr.set_source_rgb(@color[0],@color[1],@color[2])

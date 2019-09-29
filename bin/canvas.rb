@@ -355,6 +355,7 @@ class Canvas_Control
 		#Draw all the points and paths last
 		#Paths are behind points, so draw them first
 		@nouspoints.each        { |n| n.path_draw(cr) }
+		@nouspoints.each        { |n| n.caret_draw(cr)}
 		@nouspoints.each        { |n| n.draw(cr) }
 		
 
