@@ -32,6 +32,8 @@ class GtkCanvas < Gtk::DrawingArea
 	define_signal('set-path-mode-v',nil,nil,nil)
 	define_signal('note-inc-up',nil,nil,nil)
 	define_signal('note-inc-dn',nil,nil,nil)
+	define_signal('path-rotate-bck',nil,nil,nil)
+	define_signal('path-rotate-fwd',nil,nil,nil)
 end
 class GtkPropEntry < Gtk::Entry
 	type_register
@@ -42,6 +44,7 @@ class GtkPropEntry < Gtk::Entry
 end
 
 class UI_Elements
+	include Logic_Controls
 	# Construct a Gtk::Builder instance and load our UI description
 	attr_reader :menu_commands,:canvas_commands
 	def initialize
@@ -363,8 +366,19 @@ class UI_Elements
 		case type
 		when "new"
 			@current_window = "new_confirm"
+			confirmer_label.markup = "<b> There are unsaved changes.</b> \n Do you wish to proceed? "
+			confirmer_confirm.markup = "Create New"
+			confirmer_cancel.visible = true
 		when "quit"
 			@current_window = "quit_confirm"
+			confirmer_confirm.label = "Quit"
+			confirmer_cancel.visible = true
+			confirmer_label.markup = "<b> There are unsaved changes.</b> \n Do you wish to proceed? "
+		when "path_warning"
+			@current_window = "path_warning"
+			confirmer_confirm.label = "OK"
+			confirmer_cancel.visible = false
+			confirmer_label.markup = "<b> WARNING:</b> Live composition detected. \n This may have affected round-robin point starting paths. "
 		end
 		confirmer.visible = true
 	end
@@ -393,11 +407,13 @@ class UI_Elements
 			file_chooser.title = "Open"
 			file_operation.label = "Open"
 			file_chooser.visible = true
+			file_name.editable = false
 		when "save"
 			@current_window = "file_save"
 			if @current_file == nil	#If the working file does not exist yet
 				file_chooser.title = "Save As"
 				file_operation.label = "Save As"
+				file_name.editable = true
 				file_chooser.visible = true
 			else	
 				save_operation #Resave the file if @current_file already exists
@@ -408,6 +424,7 @@ class UI_Elements
 			file_name.text = @current_file.split("\\").last unless @current_file == nil
 			file_chooser.title = "Save As"
 			file_operation.label = "Save As"
+			file_name.editable = true
 			file_chooser.visible = true
 		end
 	end
@@ -427,7 +444,8 @@ class UI_Elements
 		if choice == "yes"
 			case @current_window
 			when "file_open"
-				#Set nouspoints based on file selection
+				#Remove current points and load points from file
+				load_operation
 			when "file_save"
 				#Save nouspoints to a new, or existing file, window only if new
 				save_operation
@@ -463,13 +481,41 @@ class UI_Elements
 		save.close
 	end
 	def load_operation
-		load = IO.binread(file_chooser.filename)
-		load.split!("<~>")
-		@current_file = file_chooser.filename
+		CC.nouspoints = []
+		@current_file = file_chooser.uri
+		operator = @current_file.sub("file:///","")
+		operator = operator.gsub("/","\\")
+		
+		load = IO.binread(operator)
+		load = load.gsub("\r","")
+		load = load.split("\n")
+		load.each do |point_line|
+			point_line = point_line.split("<~>")
+			CC.nouspoints << NousPoint.new(eval(point_line[1]),point_line[0].to_i)
+		end
+		CC.nouspoints.each do |n|
+			load.each do |point_line|
+				point_line = point_line.split("<~>")
+				if point_line[0].to_i == n.save_id
+					n.note           = point_line[2].to_i
+					n.velocity       = point_line[3].to_i
+					n.channel        = point_line[4].to_i
+					n.duration       = point_line[5].to_i
+					n.color          = hex_to_color(point_line[6])
+					n.repeat         = point_line[7].to_i
+					n.play_modes     = eval(point_line[8])
+					n.traveler_start = eval(point_line[9])
+					n.use_rel        = eval(point_line[10])
+					n.path_mode      = point_line[11]
+					n.path_to_rels   = eval(point_line[12])
+					n.path_from_rels = eval(point_line[13])
+					n.path_to_rels.each   {|ptr| n.path_to   << CC.nouspoints.find {|f| ptr == f.save_id}}
+					n.path_from_rels.each {|pfr| n.path_from << CC.nouspoints.find {|f| pfr == f.save_id}}
+				end
+			end
+		end
 		midinous.title = "Midinous - #{@current_file.split("\\").last}"
-		load.close
 	end
-	
 end
 
 class Tool
