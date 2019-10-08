@@ -489,7 +489,7 @@ class NousPoint
 		file.write("#{@velocity}<~>")
 		file.write("#{@channel}<~>")       
 		file.write("#{@duration}<~>") 
-		file.write("#{color_to_hex(@color)}<~>")		
+		file.write("#{color_to_hex(@default_color)}<~>")		
 		file.write("#{@repeat}<~>")        
 		file.write("#{@play_modes}<~>")    
 		file.write("#{@traveler_start}<~>")                       
@@ -897,26 +897,41 @@ class Traveler #A traveler handles the source note playing and creates another t
 			@played_note = @dest.note
 			play_note
 		elsif  srce_rel && dest_rel
-			@played_note = @last_played_note + @dest.note.to_i
+			@played_note = @last_played_note
 			play_relative
 		elsif !srce_rel && dest_rel
-			@played_note = @srce.note.to_i + @dest.note.to_i
+			@played_note = @srce.note.to_i
 			play_relative
 		end
 	end
 	def play_note
-		CC.queued_note_plays << NoteSender.new(@played_note,@dest.channel,@dest.velocity)
+		queued_notes = []
+		CC.queued_note_plays.each {|q| queued_notes << q.note}		
+		CC.queued_note_plays << NoteSender.new(@played_note,@dest.channel,@dest.velocity) unless queued_notes.find {|f| @played_note == f[0] && @dest.channel == f[1]}
 	end
 	def play_relative
 		#search the current scales variable and round to nearest note.
-		if @dest.note.include?("+")
-			@played_note = CC.scale_notes.find {|f| f >= @played_note}
-		elsif @dest.note.include?("-")
-			@played_note = CC.scale_notes.reverse_each.find {|f| f <= @played_note}
+		rel = @dest.note.to_i
+		pn  = @played_note
+		if @dest.note.to_s.include?("+")
+			(pn..127).each do |s|
+				rel -= 1 if CC.scale_posns[s] == true && s != pn
+				if rel == 0
+					pn = s 
+					break
+				end
+			end
+		elsif @dest.note.to_s.include?("-")
+			(0..pn).reverse_each do |s|
+				rel += 1 if CC.scale_posns[s] == true && s != pn
+				if rel == 0
+					pn = s 
+					break
+				end
+			end
 		end
-		@played_note = @played_note.clamp(0,127)
-		
-		CC.queued_note_plays << NoteSender.new(@played_note,@dest.channel,@dest.velocity)
+		@played_note = pn
+		play_note
 	end
 	
 	def queue_removal
@@ -955,11 +970,8 @@ class Starter #A starter handles notes that are used as starting points for path
 		@travel_c += 1
 		if @travel_c == @duration
 			@srce.playing = false
-			if @repeat > 0
-				CC.repeaters << Repeater.new(@srce,@repeat,@played_note)
-			end
+			CC.repeaters << Repeater.new(@srce,@repeat,@played_note) if @repeat > 0
 			CC.queued_note_stops << NoteSender.new(@played_note,@srce.channel,0)
-		else
 			@remove = true
 		end
 	end
@@ -969,26 +981,41 @@ class Starter #A starter handles notes that are used as starting points for path
 			@played_note = @srce.note
 			play_note
 		elsif  portal_srce_rel && srce_rel
-			@played_note = @last_played_note + @srce.note.to_i
+			@played_note = @last_played_note
 			play_relative
 		elsif !portal_srce_rel && srce_rel
-			@played_note = @portal_srce.note.to_i + @srce.note.to_i
+			@played_note = @portal_srce.note.to_i
 			play_relative
 		end
 	end
 	def play_note
-		CC.queued_note_plays << NoteSender.new(@played_note,@srce.channel,@srce.velocity)
+		queued_notes = []
+		CC.queued_note_plays.each {|q| queued_notes << q.note}
+		CC.queued_note_plays << NoteSender.new(@played_note,@srce.channel,@srce.velocity) unless queued_notes.find {|f| @played_note == f[0] && @srce.channel == f[1]}
 	end
 	def play_relative
 		#search the current scales variable and round to nearest note.
-		if @srce.note.include?("+")
-			@played_note = CC.scale_notes.find {|f| f >= @played_note}
-		elsif @srce.note.include?("-")
-			@played_note = CC.scale_notes.reverse_each.find {|f| f <= @played_note}
+		rel = @srce.note.to_i
+		pn  = @played_note
+		if @srce.note.to_s.include?("+")
+			(pn..127).each do |s|
+				rel -= 1 if CC.scale_posns[s] == true && s != pn
+				if rel == 0
+					pn = s 
+					break
+				end
+			end
+		elsif @srce.note.to_s.include?("-")
+			(0..pn).reverse_each do |s|
+				rel += 1 if CC.scale_posns[s] == true && s != pn
+				if rel == 0
+					pn = s 
+					break
+				end
+			end
 		end
-		@played_note = @played_note.clamp(0,127)
-		
-		CC.queued_note_plays << NoteSender.new(@played_note,@srce.channel,@srce.velocity)
+		@played_note = pn
+		play_note
 	end	
 	
 end
@@ -1010,9 +1037,11 @@ class Repeater #A repeater handles notes that are set to repeat/arpeggiate
 			@srce.repeating = false
 			@remove = true
 		end
-		unless @remove == true
+		unless @remove == true	
 			@srce.repeating = true
-			CC.queued_note_plays << NoteSender.new(@played_note,@srce.channel,@srce.velocity) if @timer % @dur == 0
+			queued_notes = []
+			CC.queued_note_plays.each {|q| queued_notes << [q.note,q.channel]}
+			CC.queued_note_plays << NoteSender.new(@played_note,@srce.channel,@srce.velocity) if @timer % @dur == 0 && !(queued_notes.find {|f| @played_note == f[0] && @srce.channel == f[1]})
 		end
 		@timer -=1
 	end

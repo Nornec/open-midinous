@@ -49,9 +49,18 @@ module Event_Router
 	extend Key_Bindings
 	
 	#For window keep-alives
-	UI::midinous.signal_connect("delete-event")               {true}
-	UI::file_chooser.signal_connect("delete-event")           {true}
-	UI::confirmer.signal_connect("delete-event")              {true}
+	UI::midinous.signal_connect("delete-event") do 
+		UI.confirm("quit")
+		true
+	end
+	UI::file_chooser.signal_connect("delete-event") do
+		UI::file_chooser.visible = false
+		true
+	end
+	UI::confirmer.signal_connect("delete-event") do
+		UI::confirmer.visible = false
+		true
+	end
 	
 	#For key bindings
 	UI::midinous.signal_connect("key-press-event")            { |obj, event| route_key(event) }

@@ -2,9 +2,10 @@ require_relative "points"
 
 class Canvas_Control
 	include Logic_Controls 
-	attr_accessor :nouspoints, :travelers, :repeaters, :queued_note_plays, :queued_note_stops, :root_note
-	attr_reader :grid_spacing, :midi_sync, :beats, :ms_per_tick, :dragging, :start_time, 
-              :root_note, :scale_notes, :scale, :mouse_last_pos
+	attr_accessor :nouspoints, :travelers, :beats, :beat_note, :scale, :root_note,
+	              :tempo, :repeaters, :queued_note_plays, :queued_note_stops
+	attr_reader :grid_spacing, :midi_sync, :ms_per_tick, :dragging, :start_time, 
+              :mouse_last_pos, :scale_posns
 	def initialize
 		@mouse_last_pos = nil
 		@sel_box      = nil
@@ -23,7 +24,9 @@ class Canvas_Control
 		@scale        = "Chromatic"
 		@root_note    = 60
 		@scale_notes  = []
+		@scale_posns  = []
 		set_scale(@scale,@root_note)
+		@tempo        = 120.000
 		@midi_sync    = 0.000
 		@path_sourced = false
 		@attempt_path = false
@@ -36,11 +39,12 @@ class Canvas_Control
 	end
 
 	def set_tempo(tempo)
-		@ms_per_tick = (1000 * (15 / tempo)) / (@beat_note / 4)
-		#puts @ms_per_tick
+		@tempo = tempo
+		@ms_per_tick = (1000 * (15 / @tempo)) / (@beat_note / 4)
 	end
 	def set_scale(scale_text,root)
-
+		@scale = scale_text
+		@root_note = root
 		scale = SCALES[scale_text]
 		slen = scale.length
 		@scale_notes = []
@@ -62,7 +66,11 @@ class Canvas_Control
 			c = (c + 1) % slen
 		end
 		@scale_notes.sort!
-
+		
+		(0..127).each do |num|
+			@scale_posns[num] = false
+			@scale_posns[num] = true if @scale_notes.find {|f| f == num} != nil
+		end
 	end
 	
 	def canvas_generic(string) #Used as a pseudo-handler between classes
@@ -167,7 +175,7 @@ class Canvas_Control
 			point.path_to.each do |p|
 				@starters << Starter.new(point,p,pn)
 				UI::canvas.queue_draw
-				@queued_note_plays.each {|o| o.play}
+				#@queued_note_plays.each {|o| o.play}
 				signal_chain(p,pn)
 			end
 		when "random"
@@ -252,23 +260,20 @@ class Canvas_Control
 					@nouspoints = Pl.select_points(@sel_box,@nouspoints)
 					@sel_box = nil
 					@selecting = false
-					obj.queue_draw
 				end
 			when 2 #Add a point where/when the tool is released
 				unless !@point_origin
 					@nouspoints = Pl.add_point(round_to_grid(@point_origin),@nouspoints)
 					@point_origin = nil
-					obj.queue_draw
 				end
 			when 3 #move point(s) designated by the move stencil
 				@nouspoints = Pl.move_points(@diff,@nouspoints)
 				@point_move = nil
 				@diff = [0,0]
-				obj.queue_draw
 			when 4 #select singular point
 				@nouspoints, @path_sourced = Pl.select_path_point(@path_origin,@nouspoints,@path_sourced)
-				obj.queue_draw
 		end
+		obj.queue_draw
 	end
 	
 	def canvas_del
