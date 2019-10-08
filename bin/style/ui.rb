@@ -51,6 +51,7 @@ class UI_Elements
 		@current_file   = nil
 		@operation_file = nil
 		@current_window = nil
+		@scale_iters    = []
 	end
 	def build_ui
 		builder_file = "./bin/style/midinous.glade"
@@ -324,6 +325,40 @@ class UI_Elements
 				scale_cat_5_sub_03[0] = "Octatonic Half" 
 				scale_cat_5_sub_04[0] = "Tritone" 
 				scale_cat_5_sub_05[0] = "Whole Tone"
+		
+		@scale_iters << scale_cat_1_sub_01
+		@scale_iters << scale_cat_1_sub_02
+		@scale_iters << scale_cat_1_sub_03
+		@scale_iters << scale_cat_1_sub_04
+		@scale_iters << scale_cat_1_sub_05
+		@scale_iters << scale_cat_1_sub_06
+		@scale_iters << scale_cat_2_sub_01
+		@scale_iters << scale_cat_2_sub_02
+		@scale_iters << scale_cat_2_sub_03
+		@scale_iters << scale_cat_2_sub_04
+		@scale_iters << scale_cat_2_sub_05
+		@scale_iters << scale_cat_2_sub_06
+		@scale_iters << scale_cat_2_sub_07
+		@scale_iters << scale_cat_2_sub_08
+		@scale_iters << scale_cat_2_sub_09
+		@scale_iters << scale_cat_3_sub_01
+		@scale_iters << scale_cat_3_sub_02
+		@scale_iters << scale_cat_3_sub_03
+		@scale_iters << scale_cat_3_sub_04
+		@scale_iters << scale_cat_3_sub_05
+		@scale_iters << scale_cat_3_sub_06
+		@scale_iters << scale_cat_4_sub_01
+		@scale_iters << scale_cat_4_sub_02
+		@scale_iters << scale_cat_4_sub_03
+		@scale_iters << scale_cat_4_sub_04
+		@scale_iters << scale_cat_4_sub_05
+		@scale_iters << scale_cat_4_sub_06
+		@scale_iters << scale_cat_5_sub_01
+		@scale_iters << scale_cat_5_sub_02
+		@scale_iters << scale_cat_5_sub_03
+		@scale_iters << scale_cat_5_sub_04
+		@scale_iters << scale_cat_5_sub_05
+
 		scale_combo.active = 4
 		scale_combo.active_iter = scale_cat_5_sub_01
 		
@@ -358,6 +393,7 @@ class UI_Elements
 		# 3 - shift again?
 		# 4 - Cntl
 		# 5 - Cntl+Shift
+		
 		file_chooser.filter = Gtk::FileFilter.new
 		file_chooser.filter.add_pattern("*.nous")
 		file_chooser.filter.name = "nous file filter"
@@ -366,8 +402,8 @@ class UI_Elements
 		case type
 		when "new"
 			@current_window = "new_confirm"
+			confirmer_confirm.label = "Create New"
 			confirmer_label.markup = "<b> There are unsaved changes.</b> \n Do you wish to proceed? "
-			confirmer_confirm.markup = "Create New"
 			confirmer_cancel.visible = true
 		when "quit"
 			@current_window = "quit_confirm"
@@ -433,6 +469,21 @@ class UI_Elements
 			case @current_window
 			when "new_confirm"
 				CC.nouspoints = []
+				file_name.text = ""
+				CC.tempo     = 120
+				CC.scale     = "Chromatic"
+				CC.root_note = 60
+				CC.beats     = 4
+				CC.beat_note = 4
+
+				CC.set_tempo(CC.tempo)
+				CC.set_scale(CC.scale,CC.root_note)
+				CC.canvas_grid_change(nil)
+				tempo_adj.value = CC.tempo
+				@scale_iters.each {|s| scale_combo.active_iter = s if s[0] == CC.scale}
+				root_adj.value  = CC.root_note
+				@current_file = nil
+				midinous.title = "Midinous"
 			when "quit_confirm"
 				Gtk.main_quit
 			end
@@ -477,7 +528,12 @@ class UI_Elements
 			n.write_props(save)
 			save.write("\n")
 		end
-		midinous.title = "Midinous - #{@current_file.split("\\").last}"
+		save.write("#{CC.tempo}<~>")
+		save.write("#{CC.scale}<~>")
+		save.write("#{CC.root_note}<~>")
+		save.write("#{CC.beats}<~>")
+		save.write("#{CC.beat_note}")
+		midinous.title = "Midinous - #{operator}"
 		save.close
 	end
 	def load_operation
@@ -489,7 +545,7 @@ class UI_Elements
 		load = IO.binread(operator)
 		load = load.gsub("\r","")
 		load = load.split("\n")
-		load.each do |point_line|
+		load[0..-2].each do |point_line|
 			point_line = point_line.split("<~>")
 			CC.nouspoints << NousPoint.new(eval(point_line[1]),point_line[0].to_i)
 		end
@@ -497,11 +553,19 @@ class UI_Elements
 			load.each do |point_line|
 				point_line = point_line.split("<~>")
 				if point_line[0].to_i == n.save_id
-					n.note           = point_line[2].to_i
+					if point_line[2].match(/^([+]|-)[0-9]{1,2}$/)
+						n.note = point_line[2]
+						n.use_rel = true
+					elsif (point_line[2].to_i >= 0 &&
+					       point_line[2].to_i <= 127 &&
+								!(point_line[2].include?("+") || point_line[2].include?("-")))
+					then
+						n.note = point_line[2].to_i
+					end
 					n.velocity       = point_line[3].to_i
 					n.channel        = point_line[4].to_i
 					n.duration       = point_line[5].to_i
-					n.color          = hex_to_color(point_line[6])
+					n.set_default_color(hex_to_color(point_line[6]))
 					n.repeat         = point_line[7].to_i
 					n.play_modes     = eval(point_line[8])
 					n.traveler_start = eval(point_line[9])
@@ -514,7 +578,21 @@ class UI_Elements
 				end
 			end
 		end
-		midinous.title = "Midinous - #{@current_file.split("\\").last}"
+		load_last = load.last.split("<~>")
+		CC.tempo     = load_last[0].to_f
+		CC.scale     = load_last[1]
+		CC.root_note = load_last[2].to_i
+		CC.beats     = load_last[3].to_i
+		CC.beat_note = load_last[4].to_i
+		
+		CC.set_tempo(CC.tempo)
+		CC.set_scale(CC.scale,CC.root_note)
+		CC.canvas_grid_change(nil)
+		tempo_adj.value = CC.tempo
+		@scale_iters.each {|s| scale_combo.active_iter = s if s[0] == CC.scale}
+		root_adj.value  = CC.root_note
+
+		midinous.title = "Midinous - #{operator}"
 	end
 end
 
