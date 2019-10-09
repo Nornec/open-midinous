@@ -906,7 +906,7 @@ class Traveler #A traveler handles the source note playing and creates another t
 	end
 	def play_note
 		queued_notes = []
-		CC.queued_note_plays.each {|q| queued_notes << q.note}		
+		CC.queued_note_plays.each {|q| queued_notes << [q.note,q.chan]}		
 		CC.queued_note_plays << NoteSender.new(@played_note,@dest.channel,@dest.velocity) unless queued_notes.find {|f| @played_note == f[0] && @dest.channel == f[1]}
 	end
 	def play_relative
@@ -990,7 +990,7 @@ class Starter #A starter handles notes that are used as starting points for path
 	end
 	def play_note
 		queued_notes = []
-		CC.queued_note_plays.each {|q| queued_notes << q.note}
+		CC.queued_note_plays.each {|q| queued_notes << [q.note,q.chan]}
 		CC.queued_note_plays << NoteSender.new(@played_note,@srce.channel,@srce.velocity) unless queued_notes.find {|f| @played_note == f[0] && @srce.channel == f[1]}
 	end
 	def play_relative
