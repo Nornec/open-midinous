@@ -1,3 +1,20 @@
+#   Copyright (C) 2019 James "Nornec" Ratliff
+#
+#   This file is part of Midinous
+#
+#   Midinous is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   Midinous is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with Midinous.  If not, see <https://www.gnu.org/licenses/>.
+
 class GtkRadioButtonEx < Gtk::RadioButton
 	type_register
 	def initialize
@@ -56,7 +73,7 @@ class UI_Elements
 		@out_device_items = []
 	end
 	def build_ui
-		builder_file = "./bin/style/midinous.glade"
+		builder_file = "#{File.dirname(__FILE__)}/midinous.glade"
 		
 		# Connect signal handlers to the constructed widgets
 		@builder = Gtk::Builder.new(:file => builder_file)
@@ -275,7 +292,6 @@ class UI_Elements
 		def regen_status
 			status_area.text = "Using: Output[#{Pm.out_list[Pm.out_id].name}] Input[#{Pm.in_list[Pm.in_id].name}]"
 		end
-		
 		
 		#Set up accelerators (keyboard shortcuts)
 		@menu_commands = Gtk::AccelGroup.new
