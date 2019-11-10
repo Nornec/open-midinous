@@ -31,6 +31,11 @@ the Free Software Foundation, either version 3 of the License, or
 ## Project Websites
 
 * https://github.com/Nornec/Midinous
-* https://nornec.bandcamp/com
+* https://nornec.bandcamp.com
 * https://youtube.com/nornec
 * https://rubygems.org/gems/midinous
+
+## Donate
+
+* If you enjoy Midinous, please consider donating by buying my music (name your price):
+** https://nornec.bandcamp.com/
