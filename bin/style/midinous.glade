@@ -641,7 +641,7 @@
 																<property name="title" translatable="yes">Property</property>
 																<property name="clickable">True</property>
 																<property name="sort_indicator">False</property>
-																<property name="sort_column_id">0</property>
+																<property name="sort_column_id">-1</property>
 																<child>
 																	<object class="GtkCellRendererText" id="prop_list_col1">
 																		<property name="size">16</property>
@@ -657,7 +657,7 @@
 																<property name="resizable">True</property>
 																<property name="title" translatable="yes">Value</property>
 																<property name="sort_indicator">False</property>
-																<property name="sort_column_id">1</property>
+																<property name="sort_column_id">-1</property>
 																<child>
 																	<object class="GtkCellRendererText" id="prop_list_col2">
 																		<property name="size">16</property>
