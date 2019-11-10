@@ -28,6 +28,10 @@ it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
+## Join the Discord!
+
+* https://discordapp.com/invite/2G5GNGk
+
 ## Project Websites
 
 * https://github.com/Nornec/Midinous
