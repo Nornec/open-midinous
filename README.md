@@ -5,6 +5,8 @@ Midinous combines generative features with a grid-based GUI to offer a supplemen
 ## Requirements
 
 * [GTK3](http://www.gtk.org/) 3.3.6 or later
+* Midinous is designed to run on 64-bit architectures
+* You must have 64-bit Ruby version 2.5.5 installed with the devkit and MSYS2
 
 ## Install
 
@@ -12,7 +14,8 @@ Midinous combines generative features with a grid-based GUI to offer a supplemen
 
 ## Tutorials, examples:
 
-* saves/sample.nous: This file contains examples of every basic feature offered by Midinous. Feel free to experiment from this starting point!
+* doc/Hotkeys.txt: Useful hotkeys used within the program
+* saves/sample.nous: Example Midinous project having every basic feature. Experiment from this starting point!
 
 ## License
 
