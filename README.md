@@ -37,5 +37,5 @@ the Free Software Foundation, either version 3 of the License, or
 
 ## Donate
 
-* If you enjoy Midinous, please consider donating by buying my music (name your price):
-** https://nornec.bandcamp.com/
+* If you enjoy Midinous, please consider donating by purchasing my music (name your price):
+    * https://nornec.bandcamp.com/
