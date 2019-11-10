@@ -29,3 +29,6 @@ the Free Software Foundation, either version 3 of the License, or
 ## Project Websites
 
 * https://github.com/Nornec/Midinous
+* https://nornec.bandcamp/com
+* https://youtube.com/nornec
+* https://rubygems.org/gems/midinous
