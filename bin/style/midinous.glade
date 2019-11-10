@@ -341,6 +341,52 @@
                 </child>
               </object>
             </child>
+						<child>
+              <object class="GtkMenuItem">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">_Input</property>
+                <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="input_menu">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <!-- child>
+                      <object class="GtkImageMenuItem" id="file_quit">
+                        <property name="label">gtk-quit</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="use_stock">True</property>
+                      </object>
+                    </child> -->
+                  </object>
+                </child>
+              </object>
+            </child>
+						<child>
+              <object class="GtkMenuItem">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">_Output</property>
+                <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="output_menu">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <!-- child>
+                      <object class="GtkImageMenuItem" id="file_quit">
+                        <property name="label">gtk-quit</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="use_stock">True</property>
+                      </object>
+                    </child> -->
+                  </object>
+                </child>
+              </object>
+            </child>
             <child>
               <object class="GtkMenuItem">
                 <property name="visible">True</property>

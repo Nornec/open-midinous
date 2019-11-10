@@ -46,12 +46,14 @@ end
 class UI_Elements
 	include Logic_Controls
 	# Construct a Gtk::Builder instance and load our UI description
-	attr_reader :menu_commands,:canvas_commands
+	attr_reader :menu_commands,:canvas_commands,:in_device_items,:out_device_items
 	def initialize
 		@current_file   = nil
 		@operation_file = nil
 		@current_window = nil
-		@scale_iters    = []
+		@scale_iters      = []
+		@in_device_items  = []
+		@out_device_items = []
 	end
 	def build_ui
 		builder_file = "./bin/style/midinous.glade"
@@ -68,6 +70,14 @@ class UI_Elements
 		end
 		def confirmer
 			@builder.get_object("confirmer")
+		end
+		
+		#Menus
+		def input_menu
+			@builder.get_object("input_menu")
+		end
+		def output_menu
+			@builder.get_object("output_menu")
 		end
 		
 		#Menu Items
@@ -244,6 +254,29 @@ class UI_Elements
 			@builder.get_object("scale_display")
 		end
 		
+		Pm.in_list.each  {|i| @in_device_items << Gtk::ImageMenuItem.new(label: i.name)}
+		@in_device_items.each  {|i| input_menu.append(i)}
+		input_menu.show_all
+		
+		Pm.out_list.each {|o| @out_device_items << Gtk::ImageMenuItem.new(label: o.name)}
+		@out_device_items.each {|o| output_menu.append(o)}
+		output_menu.show_all
+		
+		def set_device(id,type)
+			case type
+			when 'i'
+				Pm.sel_in(id)
+			when 'o'
+				Pm.sel_out(id)
+			end
+			regen_status
+		end
+
+		def regen_status
+			status_area.text = "Using: Output[#{Pm.out_list[Pm.out_id].name}] Input[#{Pm.in_list[Pm.in_id].name}]"
+		end
+		
+		
 		#Set up accelerators (keyboard shortcuts)
 		@menu_commands = Gtk::AccelGroup.new
 		@canvas_commands = Gtk::AccelGroup.new
@@ -383,7 +416,9 @@ class UI_Elements
 		modify_label.markup     = "<b>#{modify_label.text}</b>"
 		t_sig_label.markup      = "<b>#{t_sig_label.text}</b>"
 		scale_label.markup      = "<b>#{scale_label.text}</b>"
-
+		
+		regen_status
+		
 		#canvas.add_events(Gdk::EventMask::BUTTON_PRESS_MASK.nick) #This points to a nickname, basically a string like "button-press-mask" in this case
 
 		#Accel groups, parameter 2 is the modifier
@@ -537,6 +572,7 @@ class UI_Elements
 		save.close
 	end
 	def load_operation
+		CC.canvas_stop
 		CC.nouspoints = []
 		@current_file = file_chooser.uri
 		operator = @current_file.sub("file:///","")
