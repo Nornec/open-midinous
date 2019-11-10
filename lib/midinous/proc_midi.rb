@@ -44,16 +44,21 @@ class Proc_Midi
 	attr_accessor :out_list, :in_list
 	attr_reader   :out_id,   :in_id, :in, :midi_in
 	def initialize(oid,iid)
+		@out_list = []
+		@in_list  = []
+		
 	  @out_id = oid
 		@out_list = UniMIDI::Output.all
 		@out = UniMIDI::Output.use(@out_id)
 		
 		@in_id  = iid
-		@in  = UniMIDI::Input.use(@in_id)
 		@in_list  = UniMIDI::Input.all
-		@midi_in = GuiListener.new(@in)
-		@midi_in.listen_for(:class => [MIDIMessage::NoteOn,MIDIMessage::NoteOff]) {|e| Pl.set_note(e[:message].note.clamp(0,127))}
-		@midi_in.gui_listen
+		unless @in_list.empty?
+			@in  = UniMIDI::Input.use(@in_id)
+			@midi_in = GuiListener.new(@in)
+			@midi_in.listen_for(:class => [MIDIMessage::NoteOn,MIDIMessage::NoteOff]) {|e| Pl.set_note(e[:message].note.clamp(0,127))}
+			@midi_in.gui_listen
+		end
 	end
 	
 	#Select the output device
