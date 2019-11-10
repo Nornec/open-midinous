@@ -1,9 +1,26 @@
-require_relative "proc_midi"
-require_relative "constants"
-require_relative "logic"
-require_relative "./style/ui"
-require_relative "canvas"
-require_relative "key_bindings"
+#   Copyright (C) 2019 James "Nornec" Ratliff
+#
+#   This file is part of Midinous
+#
+#   Midinous is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   Midinous is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with Midinous.  If not, see <https://www.gnu.org/licenses/>.
+
+require "midinous/proc_midi"
+require "midinous/constants"
+require "midinous/logic"
+require "midinous/style/ui"
+require "midinous/canvas"
+require "midinous/key_bindings"
 
 class Init_Prog
 
@@ -34,7 +51,7 @@ class Init_Prog
   end
 	
 	def initialize_provider
-		css_file = "./bin/style/midinous_themes.style"
+		css_file = "#{File.dirname(__FILE__)}/style/midinous_themes.style"
     @provider = Gtk::CssProvider.new
     @provider.load_from_path(css_file)
   end
