@@ -1,0 +1,30 @@
+[            -- decrement grid size/change time signature divisor -1
+]            -- increment grid size/ change time signature divisor +1
+{            -- decrement time signature denominator (slows down play) - min 2
+}            -- increment time signature denominator (speeds up play) - max 16
+delete       -- deletes selected point(s)
+home         -- deletes paths entering selected point(s)
+end          -- deletes paths leaving selected point(s)
+Page Up      -- change path direction
+Page Down    -- change path direction
+A            -- Make starting point (need at least 1 to begin play)
+T            -- Built path - build a path between one or more points
+Q            -- Select Tool - Box select or single select points
+W            -- Point Place Tool - Places a point
+E            -- Move Tool - moves selected points based on a stencil
+R            -- Path Tool - Select source point, select target points, push build path or hit 'T'
+< and >      -- Cycle Play Mode - between robin, portal (random, split, if more than one path is leaving a point)
+, and .      -- Cycle starting path if more than one path is leaving a point
++ and -      -- add or subtract 1 from the currently selected points' note
+Num 6        -- play
+Num 5        -- stop
+space        -- toggle play/stop
+Ctrl+A       -- select all
+Ctrl+C       -- copy selected points
+Ctrl+X       -- cut selected points
+Ctrl+V       -- paste copied/cut points
+Ctrl+O       -- Open
+Ctrl+S       -- Save
+Shift+Ctrl+S -- Save As
+Ctrl+N       -- New
+Ctrl+Q       -- Quit
