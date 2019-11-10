@@ -107,26 +107,27 @@ class Canvas_Control
 		canvas_timeout(@ms_per_tick) #Start sequence
 	end
 
-	def canvas_timeout(secs)
-		GLib::Timeout.add(secs) do
+	def canvas_timeout(ms)
+		GLib::Timeout.add(ms) do
 			UI::canvas.signal_emit('travel-event') unless !@playing
 			false
 		end
 	end
-	
+
 	def canvas_travel
 		@queued_note_plays = []
 		canvas_stop if !@playing               || 
 		               (@travelers.length == 0 && 
 									  @starters.length  == 0 && 
 										@repeaters.length == 0)
+		
 		@starters.each  {|s| s.travel}
 		@travelers.each {|t| t.travel}
-		@repeaters.each {|r| r.repeat}
 		@travelers.find_all(&:reached).each do |t|
 			signal_chain(t.dest,t.played_note) #Pass the last played note here. Gather the played note from the first traveler creation
 			t.reached = false
 		end
+		@repeaters.each {|r| r.repeat}
 		
 		@queued_note_stops.each {|n| n.stop}
 		@queued_note_plays.each {|n| n.play}

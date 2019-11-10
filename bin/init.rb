@@ -93,6 +93,9 @@ module Event_Router
 	UI::play.signal_connect("button-press-event")             {CC.canvas_play}
 	UI::scale_combo.signal_connect("changed")                 {CC.set_scale(UI::scale_combo.active_iter[0],CC.root_note)}
 
+	#For menu items
+	UI::in_device_items.each_with_index  {|i, idx| i.signal_connect("button-press-event") {UI.set_device(idx,"i")}}
+	UI::out_device_items.each_with_index {|o, idx| o.signal_connect("button-press-event") {UI.set_device(idx,"o")}}
 	
 	#For file operations
 	UI::file_new.signal_connect("button-press-event")         {UI.confirm("new")}       #Confirm first with a dialog if there are unsaved changes.
@@ -138,8 +141,8 @@ module Event_Router
 	UI::canvas.signal_connect("del-path-from")                {Pl.delete_paths_from(CC.nouspoints)}
 	UI::canvas.signal_connect("set-path-mode-h")              {Pl.set_path_mode("horz")}
 	UI::canvas.signal_connect("set-path-mode-v")              {Pl.set_path_mode("vert")}
-	UI::canvas.signal_connect("note-inc-up")                  {Pl.set_note(1)}
-	UI::canvas.signal_connect("note-inc-dn")                  {Pl.set_note(-1)}
+	UI::canvas.signal_connect("note-inc-up")                  {Pl.inc_note(1)}
+	UI::canvas.signal_connect("note-inc-dn")                  {Pl.inc_note(-1)}
 	UI::canvas.signal_connect("path-rotate-bck")              {Pl.play_mode_rotate_selected("-")}
 	UI::canvas.signal_connect("path-rotate-fwd")              {Pl.play_mode_rotate_selected("+")}
 end

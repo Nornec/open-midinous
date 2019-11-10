@@ -47,9 +47,9 @@ module Key_Bindings
 				when 65453, 95 # -
 					UI::canvas.signal_emit("note-inc-dn")
 			end
-			if event.keyval == 65462 && UI::play.sensitive? == true   
+			if (event.keyval == 65462 || event.keyval == 32) && UI::play.sensitive? == true   
 				UI::play.signal_emit("keybinding-event")
-			elsif event.keyval == 65461 && UI::stop.sensitive? == true
+			elsif (event.keyval == 65461 || event.keyval == 32) && UI::stop.sensitive? == true
 				UI::stop.signal_emit("keybinding-event")
 			end
 		end
