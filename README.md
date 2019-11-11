@@ -7,7 +7,7 @@ Midinous combines generative features with a grid-based GUI to offer a supplemen
 * [GTK3](http://www.gtk.org/) 3.3.6 or later
 * Midinous is designed to run on 64-bit architectures
 * You must have 64-bit Ruby version 2.5.5 installed with the devkit and MSYS2
-* It is recommended you use a virtual MIDI cable program for use with Midinous on Windows
+* It is recommended you use a virtual MIDI cable program for use of Midinous on Windows
 
 ## Install
 
