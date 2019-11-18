@@ -3,6 +3,233 @@
 <interface>
   <requires lib="gtk+" version="3.20"/>
   <!-- interface-css-provider-path midinous_themes.style -->
+  <object class="GtkTextBuffer" id="about_text_1">
+    <property name="text">Midinous combines generative features with a grid-based GUI to offer a supplemental unique compositional experience
+
+Copyright (C) 2019 James "Nornec" Ratliff
+
+Midinous is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+https://github.com/Nornec/Midinous
+https://nornec.bandcamp/com
+https://youtube.com/nornec
+https://rubygems.org/gems/midinous</property>
+  </object>
+  <object class="GtkWindow" id="about_window">
+    <property name="can_focus">False</property>
+		<property name="title">About Midinous</property>
+		<property name="icon_name">accessories-calculator-symbolic</property>
+		<property name="resizable">False</property>
+    <child>
+      <placeholder/>
+    </child>
+    <child>
+      <object class="GtkFixed">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <child>
+          <object class="GtkTextView">
+            <property name="width_request">100</property>
+            <property name="height_request">80</property>
+            <property name="left_margin">10</property>
+            <property name="right_margin">10</property>
+            <property name="top_margin">10</property>
+            <property name="bottom_margin">10</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="editable">False</property>
+            <property name="cursor_visible">False</property>
+            <property name="buffer">about_text_1</property>
+            <property name="accepts_tab">False</property>
+            <property name="monospace">True</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkTextBuffer" id="help_text_1">
+    <property name="text">Note                   Octave
+    -2  -1   0   1   2   3   4   5   6   7   8
+C    0  12  24  36  48  60  72  84  96 108 120
+C#   1  13  25  37  49  61  73  85  97 109 121
+D    2  14  26  38  50  62  74  86  98 110 122
+D#   3  15  27  39  51  63  75  87  99 111 123
+E    4  16  28  40  52  64  76  88 100 112 124
+F    5  17  29  41  53  65  77  89 101 113 125
+F#   6  18  30  42  54  66  78  90 102 114 126
+G    7  19  31  43  55  67  79  91 103 115 127
+G#   8  20  32  44  56  68  80  92 104 116 -
+A    9  21  33  45  57  69  81  93 105 117 -
+A#  10  22  34  46  58  70  82  94 106 118 -
+B   11  23  35  47  59  71  83  95 107 119 -</property>
+  </object>
+  <object class="GtkWindow" id="notes_window">
+    <property name="can_focus">False</property>
+    <property name="title">Notes by Integer</property>
+		<property name="icon_name">accessories-calculator-symbolic</property>
+		<property name="resizable">False</property>
+    <child>
+      <placeholder/>
+    </child>
+    <child>
+      <object class="GtkFixed">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <child>
+          <object class="GtkTextView">
+            <property name="width_request">219</property>
+            <property name="height_request">215</property>
+            <property name="left_margin">10</property>
+            <property name="right_margin">10</property>
+            <property name="top_margin">10</property>
+            <property name="bottom_margin">10</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="editable">False</property>
+            <property name="cursor_visible">False</property>
+            <property name="buffer">help_text_1</property>
+            <property name="accepts_tab">False</property>
+            <property name="monospace">True</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkTextBuffer" id="help_text_2">
+    <property name="text">W = whole tone, H = Half tone
+Scales and their relative intervals
+Aeolian              R-W-H-W-W-H-W-W
+Altered              R-H-W-H-W-W-W-W
+Augmented            R-3H-H-3H-H-3H-H
+Blues                R-3H-W-H-H-3H-W
+Chromatic            R-H-H-H-H-H-H-H-H-H-H-H-H
+Dorian               R-W-H-W-W-W-H-W
+Flamenco             R-H-3H-H-W-H-3H-H
+Half Diminished      R-W-H-W-H-W-W-W
+Harmonic major       R-W-W-H-W-H-3H-H
+Harmonic minor       R-W-H-W-W-H-3H-H
+Hirajoshi            R-2W-W-H-2W-H
+Hungarian            R-W-H-3H-H-H-3H-H
+Insen                R-H-2W-W-2W-W
+Ionian               R-W-W-H-W-W-W-H
+Iwato                R-H-2W-H-2W-W
+Locrian              R-H-W-W-H-W-W-W
+Locrian Major        R-W-W-H-H-W-W-W
+Lydian               R-W-W-W-H-W-W-H
+Lydian Augmented     R-W-W-W-W-H-W-H
+Pentatonic Major     R-W-W-3H-W-3H
+Pentatonic Minor     R-3H-W-W-3H-W
+Melodic minor        R-W-H-W-W-W-W-H
+Mixolydian           R-W-W-H-W-W-H-W
+Octatonic Whole      R-W-H-W-H-W-H-W-H
+Octatonic Half       R-H-W-H-W-H-W-H-W
+Persian              R-H-3H-H-H-W-3H-H
+Phrygian             R-H-W-W-W-H-W-W
+Prometheus           R-W-W-W-3H-H-W
+Tritone              R-H-3H-W-H-3H-W
+Two-semitone Tritone R-H-H-4H-H-H
+Ukrainian Dorian     R-W-H-3H-H-W-H-W
+Whole Tone           R-W-W-W-W-W-W</property>
+  </object>
+  <object class="GtkWindow" id="scales_window">
+    <property name="can_focus">False</property>
+    <property name="title" translatable="yes">Scales and Intervals</property>
+		<property name="icon_name">accessories-calculator-symbolic</property>
+		<property name="resizable">False</property>
+    <child>
+      <placeholder/>
+    </child>
+    <child>
+      <object class="GtkFixed">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <child>
+          <object class="GtkTextView">
+            <property name="width_request">267</property>
+            <property name="height_request">510</property>
+						<property name="left_margin">10</property>
+            <property name="right_margin">10</property>
+            <property name="top_margin">10</property>
+            <property name="bottom_margin">10</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="editable">False</property>
+            <property name="cursor_visible">False</property>
+            <property name="buffer">help_text_2</property>
+            <property name="accepts_tab">False</property>
+            <property name="monospace">True</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkTextBuffer" id="help_text_3">
+    <property name="text" translatable="yes">[            -- decrement grid size/change time signature divisor -1
+]            -- increment grid size/ change time signature divisor +1
+{            -- decrement time signature denominator (slows down play) - min 2
+}            -- increment time signature denominator (speeds up play) - max 16
+delete       -- deletes selected point(s)
+home         -- deletes paths entering selected point(s)
+end          -- deletes paths leaving selected point(s)
+Page Up      -- change path direction
+Page Down    -- change path direction
+A            -- Make starting point (need at least 1 to begin play)
+T            -- Built path - build a path between one or more points
+Q            -- Select Tool - Box select or single select points
+W            -- Point Place Tool - Places a point
+E            -- Move Tool - moves selected points based on a stencil
+R            -- Path Tool - Select source point, select target points, push build path or hit 'T'
+&lt; and &gt;      -- Cycle Play Mode - between robin, portal (random, split, if more than one path is leaving a point)
+, and .      -- Cycle starting path if more than one path is leaving a point
++ and -      -- add or subtract 1 from the currently selected points' note
+Num 6        -- play
+Num 5        -- stop
+space        -- toggle play/stop
+Ctrl+A       -- select all
+Ctrl+C       -- copy selected points
+Ctrl+X       -- cut selected points
+Ctrl+V       -- paste copied/cut points
+Ctrl+O       -- Open
+Ctrl+S       -- Save
+Shift+Ctrl+S -- Save As
+Ctrl+N       -- New
+Ctrl+Q       -- Quit</property>
+  </object>
+  <object class="GtkWindow" id="hotkeys_window">
+    <property name="can_focus">False</property>
+    <property name="title" translatable="yes">Hotkeys</property>
+		<property name="icon_name">accessories-calculator-symbolic</property>
+		<property name="resizable">False</property>
+    <child>
+      <placeholder/>
+    </child>
+    <child>
+      <object class="GtkFixed">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <child>
+          <object class="GtkTextView">
+            <property name="width_request">100</property>
+            <property name="height_request">80</property>
+            <property name="left_margin">10</property>
+            <property name="right_margin">10</property>
+            <property name="top_margin">10</property>
+            <property name="bottom_margin">10</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="editable">False</property>
+            <property name="cursor_visible">False</property>
+            <property name="buffer">help_text_3</property>
+            <property name="accepts_tab">False</property>
+            <property name="monospace">True</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
   <object class="GtkDialog" id="confirmer">
 		<property name="title" translatable="yes">Confirmation</property>
 		<property name="icon_name">accessories-calculator-symbolic</property>
@@ -368,6 +595,29 @@
               <object class="GtkMenuItem">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Input _Channel</property>
+                <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="input_channel_menu">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <!-- child>
+                      <object class="GtkImageMenuItem" id="file_quit">
+                        <property name="label">gtk-quit</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="use_stock">True</property>
+                      </object>
+                    </child> -->
+                  </object>
+                </child>
+              </object>
+            </child>
+						<child>
+              <object class="GtkMenuItem">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_Output</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
@@ -394,12 +644,39 @@
                 <property name="label" translatable="yes">_Help</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
-                  <object class="GtkMenu">
+                  <object class="GtkMenu" id="help_menu">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
                       <object class="GtkImageMenuItem" id="help_about">
-                        <property name="label">gtk-about</property>
+                        <property name="label">_About</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="use_stock">True</property>
+                      </object>
+                    </child>
+										<child>
+                      <object class="GtkImageMenuItem" id="help_notes">
+                        <property name="label">_Notes by Integer</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="use_stock">True</property>
+                      </object>
+                    </child>
+										<child>
+                      <object class="GtkImageMenuItem" id="help_scales">
+                        <property name="label">_Scales and Intervals</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="use_stock">True</property>
+                      </object>
+                    </child>
+										<child>
+                      <object class="GtkImageMenuItem" id="help_hotkeys">
+                        <property name="label">_Hotkeys</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>

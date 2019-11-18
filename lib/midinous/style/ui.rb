@@ -63,12 +63,14 @@ end
 class UI_Elements
 	include Logic_Controls
 	# Construct a Gtk::Builder instance and load our UI description
-	attr_reader :menu_commands,:canvas_commands,:in_device_items,:out_device_items
+	attr_reader :menu_commands,:canvas_commands,:in_device_items,
+	            :out_device_items,:in_channel_items
 	def initialize
 		@current_file   = nil
 		@operation_file = nil
 		@current_window = nil
 		@scale_iters      = []
+		@in_channel_items = []
 		@in_device_items  = []
 		@out_device_items = []
 	end
@@ -88,6 +90,18 @@ class UI_Elements
 		def confirmer
 			@builder.get_object("confirmer")
 		end
+		def about_window
+			@builder.get_object("about_window")
+		end
+		def notes_window
+			@builder.get_object("notes_window")
+		end
+		def scales_window
+			@builder.get_object("scales_window")
+		end
+		def hotkeys_window
+			@builder.get_object("hotkeys_window")
+		end
 		
 		#Menus
 		def input_menu
@@ -95,6 +109,12 @@ class UI_Elements
 		end
 		def output_menu
 			@builder.get_object("output_menu")
+		end
+		def input_channel_menu
+			@builder.get_object("input_channel_menu")
+		end
+		def help_menu
+			@builder.get_object("help_menu")
 		end
 		
 		#Menu Items
@@ -115,6 +135,15 @@ class UI_Elements
 		end
 		def help_about
 			@builder.get_object("help_about")
+		end		
+		def help_notes
+			@builder.get_object("help_notes")
+		end		
+		def help_scales
+			@builder.get_object("help_scales")
+		end		
+		def help_hotkeys
+			@builder.get_object("help_hotkeys")
 		end
 		
 		#Drawing Areas
@@ -271,6 +300,10 @@ class UI_Elements
 			@builder.get_object("scale_display")
 		end
 		
+		16.times.with_index {|i| @in_channel_items << Gtk::ImageMenuItem.new(label: (i+1).to_s)}
+		@in_channel_items.each {|i| input_channel_menu.append(i)}
+		input_channel_menu.show_all
+		
 		Pm.in_list.each  {|i| @in_device_items << Gtk::ImageMenuItem.new(label: i.name)}
 		@in_device_items.each  {|i| input_menu.append(i)}
 		input_menu.show_all
@@ -290,7 +323,12 @@ class UI_Elements
 		end
 
 		def regen_status
-			status_area.text = "Using: Output[#{Pm.out_list[Pm.out_id].name}] Input[#{Pm.in_list[Pm.in_id].name}]"
+			unless Pm.in_list.empty?
+				status_area.text = "Using: Output[#{Pm.out_list[Pm.out_id].name}] "\
+				"Input[#{Pm.in_list[Pm.in_id].name} Channel: #{Pm.in_chan}]"
+			else
+				status_area.text = "Using: Output[#{Pm.out_list[Pm.out_id].name}]"
+			end
 		end
 		
 		#Set up accelerators (keyboard shortcuts)
