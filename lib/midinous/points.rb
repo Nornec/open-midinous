@@ -68,8 +68,13 @@ class Point_Logic
 		CC.nouspoints.find_all(&:selected).each {|n| n.path_mode = mode}
 		UI::canvas.queue_draw
 	end
-	def set_note(note)
+	def set_note_via_devc(note)
 		CC.nouspoints.find_all(&:selected).each {|n| n.note = note}
+		Pm.note_send(Pm.in_chan,note,100)
+		GLib::Timeout.add(1000) do 
+			Pm.note_rlse(1,note)
+			false
+		end
 		populate_prop(CC.nouspoints)
 	end
 	def inc_note(inc)

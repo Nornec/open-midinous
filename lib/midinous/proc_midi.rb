@@ -41,11 +41,12 @@ class GuiListener < MIDIEye::Listener
 end
 
 class Proc_Midi
-	attr_accessor :out_list, :in_list
+	attr_accessor :out_list, :in_list, :in_chan
 	attr_reader   :out_id,   :in_id, :in, :midi_in
 	def initialize(oid,iid)
 		@out_list = []
 		@in_list  = []
+		@in_chan  = 1
 		
 	  @out_id = oid
 		@out_list = UniMIDI::Output.all
@@ -55,10 +56,17 @@ class Proc_Midi
 		@in_list  = UniMIDI::Input.all
 		unless @in_list.empty?
 			@in  = UniMIDI::Input.use(@in_id)
-			@midi_in = GuiListener.new(@in)
-			@midi_in.listen_for(:class => [MIDIMessage::NoteOn,MIDIMessage::NoteOff]) {|e| Pl.set_note(e[:message].note.clamp(0,127))}
-			@midi_in.gui_listen
+      set_listener
 		end
+	end
+	
+	#Restart the listener
+	def set_listener
+		@midi_in = GuiListener.new(@in)
+		@midi_in.listen_for(:class => [MIDIMessage::NoteOn]) do |e| 
+			Pl.set_note_via_devc(e[:message].note.clamp(0,127)) if e[:message].velocity <= 127
+		end
+		@midi_in.gui_listen
 	end
 	
 	#Select the output device
@@ -71,6 +79,8 @@ class Proc_Midi
 	def sel_in(id)
 		@in = UniMIDI::Input.use(id)
 		@in_id = id
+		@midi_in.close
+		set_listener
 	end
 	
 	#Sends a note to an instrument

@@ -34,6 +34,10 @@ class Init_Prog
 		apply_style(UI::prop_list_view,@provider)
 		apply_style(UI::file_chooser,@provider)
 		apply_style(UI::confirmer,@provider)
+		apply_style(UI::about_window,@provider)
+		apply_style(UI::notes_window,@provider)
+		apply_style(UI::scales_window,@provider)
+		apply_style(UI::hotkeys_window,@provider)
 	end
 	
 	def grid_center #center the grid
@@ -78,6 +82,22 @@ module Event_Router
 		UI::confirmer.visible = false
 		true
 	end
+	UI::about_window.signal_connect("delete-event") do
+		UI::about_window.visible = false
+		true
+	end
+	UI::notes_window.signal_connect("delete-event") do
+		UI::notes_window.visible = false
+		true
+	end
+	UI::scales_window.signal_connect("delete-event") do
+		UI::scales_window.visible = false
+		true
+	end
+	UI::hotkeys_window.signal_connect("delete-event") do
+		UI::hotkeys_window.visible = false
+		true
+	end
 	
 	#For key bindings
 	UI::midinous.signal_connect("key-press-event")            { |obj, event| route_key(event) }
@@ -113,18 +133,29 @@ module Event_Router
 	#For menu items
 	UI::in_device_items.each_with_index  {|i, idx| i.signal_connect("button-press-event") {UI.set_device(idx,"i")}}
 	UI::out_device_items.each_with_index {|o, idx| o.signal_connect("button-press-event") {UI.set_device(idx,"o")}}
+	UI::in_channel_items.each do |i|      
+		i.signal_connect("button-press-event") do
+			Pm.in_chan = i.label.to_i
+			UI.regen_status
+		end
+	end
+	
+	UI::help_about.signal_connect("button-press-event")       {UI::about_window.visible   = true}
+	UI::help_notes.signal_connect("button-press-event")       {UI::notes_window.visible   = true}
+	UI::help_scales.signal_connect("button-press-event")      {UI::scales_window.visible  = true}
+	UI::help_hotkeys.signal_connect("button-press-event")     {UI::hotkeys_window.visible = true}
 	
 	#For file operations
-	UI::file_new.signal_connect("button-press-event")         {UI.confirm("new")}       #Confirm first with a dialog if there are unsaved changes.
-	UI::file_open.signal_connect("button-press-event")        {UI.file_oper("open")}    #Change the label to "Open"
-	UI::file_save.signal_connect("button-press-event")        {UI.file_oper("save")}    #Change the label to "Save", or save automatically if the working file exists.
-	UI::file_save_as.signal_connect("button-press-event")     {UI.file_oper("saveas")}  #Change the label to "Save As"
-	UI::file_quit.signal_connect("button-press-event")        {UI.confirm("quit")}      #Confirm first with a dialog if there are unsaved changes.
+	UI::file_new.signal_connect("button-press-event")         {UI.confirm("new")}       
+	UI::file_open.signal_connect("button-press-event")        {UI.file_oper("open")}    
+	UI::file_save.signal_connect("button-press-event")        {UI.file_oper("save")}    
+	UI::file_save_as.signal_connect("button-press-event")     {UI.file_oper("saveas")}  
+	UI::file_quit.signal_connect("button-press-event")        {UI.confirm("quit")}      
 	
 	UI::confirmer_confirm.signal_connect("button-press-event"){UI.confirm_act("yes")}
 	UI::confirmer_cancel.signal_connect("button-press-event") {UI.confirm_act("no")}
 	
-	UI::file_operation.signal_connect("button-press-event")   {UI.file_oper_act("yes")} #If open, confirm first with a dialog if there are unsaved changes. If save/save as, overwrite confirmation should automatically appear. Otherwise, use confirmer.
+	UI::file_operation.signal_connect("button-press-event")   {UI.file_oper_act("yes")}
 	UI::file_cancel.signal_connect("button-press-event")      {UI.file_oper_act("no")}
 	UI::file_chooser.signal_connect("selection-changed")      {UI.file_input_check("chooser")}
 	UI::file_name.signal_connect("changed")                   {UI.file_input_check("name")}
