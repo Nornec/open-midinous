@@ -142,6 +142,7 @@ module Event_Router
 
 	UI::edit_io.signal_connect("button-press-event") do
 		Pm.regenerate
+		UI::set_io_menu_items
 		UI::in_device_items.each_with_index  {|i, idx| i.signal_connect("button-press-event") {UI.set_device(idx,"i")}}
 		UI::out_device_items.each_with_index {|o, idx| o.signal_connect("button-press-event") {UI.set_device(idx,"o")}}
 		UI::in_channel_items.each do |i|      
