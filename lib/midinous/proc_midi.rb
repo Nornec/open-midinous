@@ -14,6 +14,15 @@
 #
 #   You should have received a copy of the GNU General Public License
 #   along with Midinous.  If not, see <https://www.gnu.org/licenses/>.
+module UniMIDI
+	class Loader
+		class << self
+			def clear_devices
+				@devices = nil
+			end
+		end
+	end
+end
 
 class GuiListener < MIDIEye::Listener
 
@@ -54,12 +63,28 @@ class Proc_Midi
 		
 		@in_id  = iid
 		@in_list  = UniMIDI::Input.all
-		unless @in_list.empty?
+		unless @in_list.length <= 1
 			@in  = UniMIDI::Input.use(@in_id)
       set_listener
 		end
 	end
-	
+	def regenerate
+		UniMIDI::Input.each {|i| i.close} #Necessary?
+		UniMIDI::Output.each {|o| o.close}
+		UniMIDI::Loader.clear_devices
+		UniMIDI::Loader.devices
+		
+		@out_list = UniMIDI::Output.all
+		@out = UniMIDI::Output.use(@out_id)
+		
+		@in_list  = UniMIDI::Input.all
+		unless @in_list.length <= 1
+			@in  = UniMIDI::Input.use(@in_id)
+			@midi_in.close unless @midi_in.nil?
+      set_listener
+		end
+	end
+
 	#Restart the listener
 	def set_listener
 		@midi_in = GuiListener.new(@in)
@@ -79,7 +104,7 @@ class Proc_Midi
 	def sel_in(id)
 		@in = UniMIDI::Input.use(id)
 		@in_id = id
-		@midi_in.close
+		@midi_in.close unless @midi_in.nil?
 		set_listener
 	end
 	

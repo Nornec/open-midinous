@@ -129,14 +129,26 @@ module Event_Router
 	UI::stop.signal_connect("button-press-event")             {CC.canvas_stop}
 	UI::play.signal_connect("button-press-event")             {CC.canvas_play}
 	UI::scale_combo.signal_connect("changed")                 {CC.set_scale(UI::scale_combo.active_iter[0],CC.root_note)}
-
-	#For menu items
+	
+	#For menu items	
 	UI::in_device_items.each_with_index  {|i, idx| i.signal_connect("button-press-event") {UI.set_device(idx,"i")}}
 	UI::out_device_items.each_with_index {|o, idx| o.signal_connect("button-press-event") {UI.set_device(idx,"o")}}
 	UI::in_channel_items.each do |i|      
 		i.signal_connect("button-press-event") do
 			Pm.in_chan = i.label.to_i
 			UI.regen_status
+		end
+	end
+
+	UI::edit_io.signal_connect("button-press-event") do
+		Pm.regenerate
+		UI::in_device_items.each_with_index  {|i, idx| i.signal_connect("button-press-event") {UI.set_device(idx,"i")}}
+		UI::out_device_items.each_with_index {|o, idx| o.signal_connect("button-press-event") {UI.set_device(idx,"o")}}
+		UI::in_channel_items.each do |i|      
+			i.signal_connect("button-press-event") do
+				Pm.in_chan = i.label.to_i
+				UI.regen_status
+			end
 		end
 	end
 	
@@ -191,7 +203,7 @@ module Event_Router
 	UI::canvas.signal_connect("set-path-mode-v")              {Pl.set_path_mode("vert")}
 	UI::canvas.signal_connect("note-inc-up")                  {Pl.inc_note(1)}
 	UI::canvas.signal_connect("note-inc-dn")                  {Pl.inc_note(-1)}
-	UI::canvas.signal_connect("path-rotate-bck")              {Pl.play_mode_rotate_selected("-")}
-	UI::canvas.signal_connect("path-rotate-fwd")              {Pl.play_mode_rotate_selected("+")}
+	UI::canvas.signal_connect("path-rotate-bck")              {Pl.path_rotate("-")}
+	UI::canvas.signal_connect("path-rotate-fwd")              {Pl.path_rotate("+")}
 end
 

@@ -117,10 +117,10 @@ module Logic_Controls #various reusable functions useful for checks and math
 		end
 	end
 	
-	def round_num_to_grid(num)
+	def round_num_to_grid(num) #2050
 		temp = num % CC.grid_spacing
 		num -= temp if temp < (CC.grid_spacing/2)
-		num -= n-temp+CC.grid_spacing if temp >= (CC.grid_spacing/2)
+		num  = (num-temp)+CC.grid_spacing if temp >= (CC.grid_spacing/2)
 		return num
 	end
 	

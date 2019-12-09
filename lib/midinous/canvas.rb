@@ -296,7 +296,6 @@ class Canvas_Control
 	
 	def canvas_del
 		@nouspoints = Pl.delete_points(@nouspoints)
-		UI::canvas.queue_draw
 	end
 	
 	def canvas_bg_draw(cr)

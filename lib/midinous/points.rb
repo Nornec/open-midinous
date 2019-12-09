@@ -129,34 +129,43 @@ class Point_Logic
 		@copy_pos = origins.min
 		@copy_type = type
 		@mempointsbuff = CC.nouspoints.find_all(&:selected)
+		@paste_count = 0
 	end		
 	def paste_points
 		return if @mempointsbuff.empty?
 		copy_lookup = {}
+		
+		# Clone the cut copy of pasted points if someone wants to cutpaste more than once
+		# Then turn the cut operation into the copy operation
+		copy_points("copy") if @paste_count == 1
 
 		# Clone the points and track old point => new point
 		@mempointsbuff.each do |n|
-				n.selected = false if @copy_type == "copy"
-				mem_point = n.clone
-				@mempoints << mem_point
-				copy_lookup[n.object_id] = mem_point
+			n.selected = false if @copy_type == "copy"
+			mem_point = n.clone
+			@mempoints << mem_point
+			copy_lookup[n.object_id] = mem_point
 		end
 
 		# Update the point relations
 		@mempoints.each do |n|
-				n.path_to   = n.path_to.map   { |pt| copy_lookup[pt.object_id] }.compact
-				n.path_from = n.path_from.map { |pf| copy_lookup[pf.object_id] }.compact
+			n.path_to   = n.path_to.map   { |pt| copy_lookup[pt.object_id] }.compact
+			n.path_from = n.path_from.map { |pf| copy_lookup[pf.object_id] }.compact
 		end
 		
 		@paste_count = 0 if @copy_type == "copy"
-		CC.nouspoints.reject!(&:selected) if @copy_type == "cut" && @paste_count == 0
+		delete_points(CC.nouspoints) if @copy_type == "cut" && @paste_count == 0
 		@paste_count += 1
-
+		
 		paste_pos = CC.mouse_last_pos
-		diff = round_to_grid([paste_pos[0] - @copy_pos[0],paste_pos[1] - @copy_pos[1]])
-		@mempoints.each {|m| m.set_destination(diff)}
+		diff = round_to_grid([paste_pos[0] - @copy_pos[0],paste_pos[1] - @copy_pos[1]])	
+		@mempoints.each do |m|
+			m.set_destination(diff)
+			m.selected = true
+		end
 		@mempoints.each {|m| CC.nouspoints << m} if paste_check(diff,@mempoints)
 		@mempoints = []
+		
 		populate_prop(CC.nouspoints)
 		UI::canvas.queue_draw
 	end
@@ -258,8 +267,8 @@ class Point_Logic
 				else UI::prop_mod_button.sensitive = false
 				end
 			when "X-coordinate", "Y-coordinate"
-				if round_num_to_grid(text.to_i) >= CC.grid_spacing && 
-				   round_num_to_grid(text.to_i) <= (CANVAS_SIZE - CC.grid_spacing)
+				if text.to_i >= CC.grid_spacing && 
+				   text.to_i <= (CANVAS_SIZE - CC.grid_spacing)
 				then
 						 UI::prop_mod_button.sensitive = true
 				else UI::prop_mod_button.sensitive = false
@@ -317,9 +326,9 @@ class Point_Logic
 			when "Channel"
 				points.find_all(&:selected).each {|p| p.channel = UI::prop_mod.text.to_i}
 			when "X-coordinate"
-				points.find(&:selected).x = UI::prop_mod.text.to_i
+				points.find(&:selected).x = round_num_to_grid(UI::prop_mod.text.to_i)
 			when "Y-coordinate"
-				points.find(&:selected).y = UI::prop_mod.text.to_i
+				points.find(&:selected).y = round_num_to_grid(UI::prop_mod.text.to_i)
 			when "Color"
 				points.find_all(&:selected).each {|p| p.set_default_color(hex_to_color("##{UI::prop_mod.text}"))}
 			when "Path Mode"
@@ -368,14 +377,17 @@ class Point_Logic
 					n.play_modes.rotate!(dir)	until n.play_modes[0] == "portal"
 				when "portal"
 					n.play_modes.rotate!(dir)	until n.play_modes[0] == "robin"
+				when "random","split"
+				  n.play_modes.rotate!(dir) until n.play_modes[0] == "robin"
 				end
 			else
 				n.play_modes.rotate!(dir)
 			end
+			populate_prop(CC.nouspoints.find_all)
 			UI::canvas.queue_draw
 		end
 	end
-	def play_mode_rotate_selected(dir)
+	def path_rotate(dir)
 		CC.nouspoints.find_all(&:selected).each do |n|
 			case dir
 			when "+"
@@ -384,6 +396,7 @@ class Point_Logic
 				n.path_to.rotate!(-1)
 			end
 		end
+
 		UI::canvas.queue_draw
 	end
 	
@@ -402,11 +415,15 @@ class Point_Logic
 		points.reject!(&:selected)
 		UI::prop_list_model.clear
 		UI::prop_mod.text = ""
+		UI::canvas.queue_draw
 		return points
 	end
 	def delete_paths_to(points)
 		points.find_all {|f| !f.path_to.length.zero? && f.selected == true}.each {|n| n.path_to.each {|b| b.path_from.reject! {|g| g == n }}}
-		points.find_all {|f| !f.path_to.length.zero? && f.selected == true}.each {|n| n.path_to = []}
+		points.find_all {|f| !f.path_to.length.zero? && f.selected == true}.each do |n| 
+		  n.path_to = []
+			play_mode_rotate(1)
+	  end
 		UI::canvas.queue_draw
 	end
 	def delete_paths_from(points)
