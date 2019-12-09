@@ -104,6 +104,9 @@ class UI_Elements
 		end
 		
 		#Menus
+		def edit_menu
+			@builder.get_object("edit_menu")
+		end
 		def input_menu
 			@builder.get_object("input_menu")
 		end
@@ -132,6 +135,9 @@ class UI_Elements
 		end
 		def file_quit
 			@builder.get_object("file_quit")
+		end
+		def edit_io
+			@builder.get_object("edit_io")
 		end
 		def help_about
 			@builder.get_object("help_about")
@@ -300,17 +306,29 @@ class UI_Elements
 			@builder.get_object("scale_display")
 		end
 		
-		16.times.with_index {|i| @in_channel_items << Gtk::ImageMenuItem.new(label: (i+1).to_s)}
-		@in_channel_items.each {|i| input_channel_menu.append(i)}
-		input_channel_menu.show_all
+		def set_io_menu_items
 		
-		Pm.in_list.each  {|i| @in_device_items << Gtk::ImageMenuItem.new(label: i.name)}
-		@in_device_items.each  {|i| input_menu.append(i)}
-		input_menu.show_all
-		
-		Pm.out_list.each {|o| @out_device_items << Gtk::ImageMenuItem.new(label: o.name)}
-		@out_device_items.each {|o| output_menu.append(o)}
-		output_menu.show_all
+			@in_channel_items.each {|i| input_channel_menu.remove(i)}
+			@in_channel_items = []
+			@in_device_items.each {|i| input_menu.remove(i)}
+			@in_device_items = []
+			@out_device_items.each {|o| output_menu.remove(o)}
+			@out_device_items = []
+			
+			unless Pm.in_list.length <= 1
+				16.times.with_index {|i| @in_channel_items << Gtk::ImageMenuItem.new(label: (i+1).to_s)}
+				@in_channel_items.each {|i| input_channel_menu.append(i)}
+	
+				Pm.in_list.each  {|i| @in_device_items << Gtk::ImageMenuItem.new(label: i.name)}
+				@in_device_items.each  {|i| input_menu.append(i)}
+			end
+			Pm.out_list.each {|o| @out_device_items << Gtk::ImageMenuItem.new(label: o.name)}
+			@out_device_items.each {|o| output_menu.append(o)}
+			
+			input_channel_menu.show_all
+			input_menu.show_all
+			output_menu.show_all
+		end
 		
 		def set_device(id,type)
 			case type
@@ -323,7 +341,7 @@ class UI_Elements
 		end
 
 		def regen_status
-			unless Pm.in_list.empty?
+			unless Pm.in_list.length <= 1
 				status_area.text = "Using: Output[#{Pm.out_list[Pm.out_id].name}] "\
 				"Input[#{Pm.in_list[Pm.in_id].name} Channel: #{Pm.in_chan}]"
 			else
@@ -471,7 +489,9 @@ class UI_Elements
 		t_sig_label.markup      = "<b>#{t_sig_label.text}</b>"
 		scale_label.markup      = "<b>#{scale_label.text}</b>"
 		
+		set_io_menu_items
 		regen_status
+		
 		
 		#canvas.add_events(Gdk::EventMask::BUTTON_PRESS_MASK.nick) #This points to a nickname, basically a string like "button-press-mask" in this case
 
@@ -631,6 +651,7 @@ class UI_Elements
 		@current_file = file_chooser.uri
 		operator = @current_file.sub("file:///","")
 		operator = operator.gsub("/","\\")
+		operator = operator.gsub("%20"," ")
 		
 		load = IO.binread(operator)
 		load = load.gsub("\r","")

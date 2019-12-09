@@ -14,7 +14,7 @@ the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
 https://github.com/Nornec/Midinous
-https://nornec.bandcamp/com
+https://nornec.bandcamp.com
 https://youtube.com/nornec
 https://rubygems.org/gems/midinous</property>
   </object>
@@ -486,7 +486,7 @@ Ctrl+Q       -- Quit</property>
 		<property name="visible">True</property>
 		<property name="name">midinous_main</property>
     <property name="can_focus">False</property>
-		<property name="resizable">True</property>
+		<property name="resizable">false</property>
 		<property name="deletable">True</property>
 		<property name="title" translatable="yes">Midinous</property>
 		<property name="icon_name">accessories-calculator-symbolic</property>
@@ -558,6 +558,29 @@ Ctrl+Q       -- Quit</property>
                     <child>
                       <object class="GtkImageMenuItem" id="file_quit">
                         <property name="label">gtk-quit</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="use_stock">True</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+						<child>
+              <object class="GtkMenuItem">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">_Edit</property>
+                <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="edit_menu">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkImageMenuItem" id="edit_io">
+                        <property name="label">_IO Regenerate</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
