@@ -69,17 +69,21 @@ class Proc_Midi
 		end
 	end
 	def regenerate
-		UniMIDI::Input.each {|i| i.close} #Necessary?
-		UniMIDI::Output.each {|o| o.close}
+		@midi_in.close unless @midi_in.nil?
+		UniMIDI::Input[@in_id].close
+		UniMIDI::Output[@out_id].close
+
 		UniMIDI::Loader.clear_devices
 		UniMIDI::Loader.devices
-		
-		@out_list = UniMIDI::Output.all
-		@out = UniMIDI::Output.use(@out_id)
-		
+
 		@in_list  = UniMIDI::Input.all
+		@out_list = UniMIDI::Output.all
+
+		@out = UniMIDI::Output.first
+    @out_id = 0
 		unless @in_list.length <= 1
-			@in  = UniMIDI::Input.use(@in_id)
+			@in  = UniMIDI::Input.first
+			@in_id = 0
 			@midi_in.close unless @midi_in.nil?
       set_listener
 		end
