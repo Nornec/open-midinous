@@ -17,7 +17,7 @@ Midinous combines generative features with a grid-based GUI to offer a supplemen
 
 * doc/Hotkeys.txt: Useful hotkeys used within the program
 * saves/sample.nous: Example Midinous project having every basic feature. Experiment from this starting point!
-* Tutorial video: https://youtu.be/y3Xb2ZC49f0
+* Tutorial video: https://www.youtube.com/watch?v=l20CNUEJumw
 
 ## License
 
