@@ -305,16 +305,15 @@ class UI_Elements
 		def scale_display
 			@builder.get_object("scale_display")
 		end
-		
-		def set_io_menu_items
-		
+		def clear_io_menu_items
 			@in_channel_items.each {|i| input_channel_menu.remove(i)}
 			@in_channel_items = []
 			@in_device_items.each {|i| input_menu.remove(i)}
 			@in_device_items = []
 			@out_device_items.each {|o| output_menu.remove(o)}
 			@out_device_items = []
-			
+		end
+		def set_io_menu_items
 			unless Pm.in_list.length <= 1
 				16.times.with_index {|i| @in_channel_items << Gtk::ImageMenuItem.new(label: (i+1).to_s)}
 				@in_channel_items.each {|i| input_channel_menu.append(i)}
