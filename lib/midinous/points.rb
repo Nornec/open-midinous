@@ -71,7 +71,7 @@ class Point_Logic
 	def set_note_via_devc(note)
 		CC.nouspoints.find_all(&:selected).each {|n| n.note = note}
 		Pm.note_send(Pm.in_chan,note,100)
-		GLib::Timeout.add(1000) do 
+		GLib::Timeout.add(100) do 
 			Pm.note_rlse(1,note)
 			false
 		end
@@ -387,6 +387,12 @@ class Point_Logic
 			UI::canvas.queue_draw
 		end
 	end
+	def play_mode_set(mode)
+		return unless ["robin","portal","split","random"].find {|f| f = mode}
+		CC.nouspoints.find_all(&:selected).each do |n|
+			n.play_modes.rotate!(1) until n.play_modes[0] == mode
+		end
+	end
 	def path_rotate(dir)
 		CC.nouspoints.find_all(&:selected).each do |n|
 			case dir
@@ -422,7 +428,7 @@ class Point_Logic
 		points.find_all {|f| !f.path_to.length.zero? && f.selected == true}.each {|n| n.path_to.each {|b| b.path_from.reject! {|g| g == n }}}
 		points.find_all {|f| !f.path_to.length.zero? && f.selected == true}.each do |n| 
 		  n.path_to = []
-			play_mode_rotate(1)
+			play_mode_set("robin")
 	  end
 		UI::canvas.queue_draw
 	end

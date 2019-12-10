@@ -15,12 +15,14 @@
 #   You should have received a copy of the GNU General Public License
 #   along with Midinous.  If not, see <https://www.gnu.org/licenses/>.
 
+require "midinous/extensions"
 require "midinous/proc_midi"
 require "midinous/constants"
 require "midinous/logic"
 require "midinous/style/ui"
 require "midinous/canvas"
 require "midinous/key_bindings"
+
 
 class Init_Prog
 
@@ -141,6 +143,7 @@ module Event_Router
 	end
 
 	UI::edit_io.signal_connect("button-press-event") do
+		UI::clear_io_menu_items
 		Pm.regenerate
 		UI::set_io_menu_items
 		UI::in_device_items.each_with_index  {|i, idx| i.signal_connect("button-press-event") {UI.set_device(idx,"i")}}
