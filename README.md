@@ -1,4 +1,4 @@
-# Midinous: Grid-based Generative Music Software
+# Midinous: Grid-based Generative Midi Software
 
 Midinous combines generative features with a grid-based GUI to offer a supplemental and unique compositional experience
 
