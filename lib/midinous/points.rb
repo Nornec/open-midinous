@@ -326,9 +326,11 @@ class Point_Logic
 			when "Channel"
 				points.find_all(&:selected).each {|p| p.channel = UI::prop_mod.text.to_i}
 			when "X-coordinate"
-				points.find(&:selected).x = round_num_to_grid(UI::prop_mod.text.to_i)
+				temp_origin = points.find(&:selected).origin
+				points.find(&:selected).origin = [round_num_to_grid(UI::prop_mod.text.to_i),temp_origin[1]]
 			when "Y-coordinate"
-				points.find(&:selected).y = round_num_to_grid(UI::prop_mod.text.to_i)
+			  temp_origin = points.find(&:selected).origin
+				points.find(&:selected).origin = [temp_origin[0],round_num_to_grid(UI::prop_mod.text.to_i)]
 			when "Color"
 				points.find_all(&:selected).each {|p| p.set_default_color(hex_to_color("##{UI::prop_mod.text}"))}
 			when "Path Mode"
