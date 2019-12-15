@@ -576,6 +576,11 @@ class UI_Elements
 		if choice == "yes"
 			case @current_window
 			when "new_confirm"
+				CC.nouspoints.each do |n|
+					n.traveler_start = false
+					n.path_to   = []
+					n.path_from = []
+				end
 				CC.nouspoints = []
 				file_name.text = ""
 				CC.tempo     = 120
