@@ -461,6 +461,7 @@ class Point_Logic
 		CC.nouspoints.find_all(&:selected).each do |n| 
 			if n.traveler_start == false
 				n.traveler_start = true
+				n.note = CC.root_note
 			elsif n.traveler_start == true
 				n.traveler_start = false
 			end 
