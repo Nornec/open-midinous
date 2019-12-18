@@ -42,7 +42,7 @@ class Init_Prog
 		apply_style(UI::hotkeys_window,@provider)
 	end
 	
-	def grid_center #center the grid
+	def grid_center
 		UI::canvas_h_adj.set_value(CANVAS_SIZE/3.1)
 		UI::canvas_v_adj.set_value(CANVAS_SIZE/2.4)
 	end
@@ -66,7 +66,6 @@ end
 
 init  = Init_Prog.new
 Times = Time.new
-#init.grid_center # Setting Grid Center here ensures the background always gets drawn first
 
 module Event_Router
 	extend Key_Bindings
@@ -188,11 +187,11 @@ module Event_Router
 	UI::canvas_commands.connect(Gdk::Keyval::KEY_v,4,0)       {Pl.paste_points         if Active_Tool.tool_id == 1}
 	
 	#Canvas Events
-	UI::canvas.signal_connect("button-press-event")           { |obj, event| CC.canvas_press(event) }
+	UI::canvas.signal_connect("button-press-event")           { |obj, event| CC.canvas_press(obj,event) }
 	UI::canvas.signal_connect("motion-notify-event")          { |obj, event| CC.canvas_drag(obj,event) }
 	UI::canvas.signal_connect("button-release-event")         { |obj, event| CC.canvas_release(obj,event) }                             
 	UI::canvas.signal_connect("draw")                         { |obj, cr|    CC.canvas_draw(cr) }
-	UI::canvas.signal_connect("delete-selected-event")        {CC.canvas_del}	
+	UI::canvas.signal_connect("delete-selected-event")        {Pl.delete_points}
 	UI::canvas.signal_connect("beat-up")                      {CC.canvas_grid_change("+")}
 	UI::canvas.signal_connect("beat-dn")                      {CC.canvas_grid_change("-")}
 	UI::canvas.signal_connect("beat-note-up")                 {CC.canvas_grid_change("++")}
@@ -201,8 +200,8 @@ module Event_Router
 	UI::canvas.signal_connect("cycle-play-mode-bck")          {Pl.play_mode_rotate(-1)}
 	UI::canvas.signal_connect("cycle-play-mode-fwd")          {Pl.play_mode_rotate(1)}
 	UI::canvas.signal_connect("set-start")                    {Pl.set_start}
-	UI::canvas.signal_connect("del-path-to")                  {Pl.delete_paths_to(CC.nouspoints)}
-	UI::canvas.signal_connect("del-path-from")                {Pl.delete_paths_from(CC.nouspoints)}
+	UI::canvas.signal_connect("del-path-to")                  {Pl.delete_paths_to}
+	UI::canvas.signal_connect("del-path-from")                {Pl.delete_paths_from}
 	UI::canvas.signal_connect("set-path-mode-h")              {Pl.set_path_mode("horz")}
 	UI::canvas.signal_connect("set-path-mode-v")              {Pl.set_path_mode("vert")}
 	UI::canvas.signal_connect("note-inc-up")                  {Pl.inc_note(1)}

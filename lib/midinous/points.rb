@@ -154,7 +154,7 @@ class Point_Logic
 		end
 		
 		@paste_count = 0 if @copy_type == "copy"
-		delete_points(CC.nouspoints) if @copy_type == "cut" && @paste_count == 0
+		delete_points if @copy_type == "cut" && @paste_count == 0
 		@paste_count += 1
 		
 		paste_pos = CC.mouse_last_pos
@@ -389,11 +389,9 @@ class Point_Logic
 			UI::canvas.queue_draw
 		end
 	end
-	def play_mode_set(mode)
-		return unless ["robin","portal","split","random"].find {|f| f = mode}
-		CC.nouspoints.find_all(&:selected).each do |n|
-			n.play_modes.rotate!(1) until n.play_modes[0] == mode
-		end
+	def play_mode_set(point,mode)
+		return unless ["robin","portal","split","random"].find {|f| f == mode}
+		point.play_modes.rotate!(1) until point.play_modes[0] == mode
 	end
 	def path_rotate(dir)
 		CC.nouspoints.find_all(&:selected).each do |n|
@@ -417,26 +415,30 @@ class Point_Logic
 		return points, false
 	end
 	
-	def delete_points(points)
-		points.find_all {|f| !f.path_to.length.zero?}.each   {|n| n.path_to.reject!(&:selected)}
-		points.find_all {|f| !f.path_from.length.zero?}.each {|n| n.path_from.reject!(&:selected)}
-		points.reject!(&:selected)
+	def delete_points
+		delete_paths_to
+		delete_paths_from
+		CC.nouspoints.reject!(&:selected)
 		UI::prop_list_model.clear
 		UI::prop_mod.text = ""
 		UI::canvas.queue_draw
-		return points
 	end
-	def delete_paths_to(points)
-		points.find_all {|f| !f.path_to.length.zero? && f.selected == true}.each {|n| n.path_to.each {|b| b.path_from.reject! {|g| g == n }}}
-		points.find_all {|f| !f.path_to.length.zero? && f.selected == true}.each do |n| 
+	def delete_paths_to
+		CC.nouspoints.find_all {|f| !f.path_to.length.zero? && f.selected == true}.each {|n| n.path_to.each {|b| b.path_from.reject! {|g| g == n }}}
+		CC.nouspoints.find_all {|f| !f.path_to.length.zero? && f.selected == true}.each do |n| 
 		  n.path_to = []
-			play_mode_set("robin")
+			play_mode_set(n,"robin")
 	  end
 		UI::canvas.queue_draw
 	end
-	def delete_paths_from(points)
-		points.find_all {|f| !f.path_from.length.zero? && f.selected == true}.each {|n| n.path_from.each {|b| b.path_to.reject! {|g| g == n }}}
-		points.find_all {|f| !f.path_from.length.zero? && f.selected == true}.each {|n| n.path_from = []}
+	def delete_paths_from
+		CC.nouspoints.find_all {|f| !f.path_from.length.zero? && f.selected == true}.each do |n| 
+			n.path_from.each do |b|
+				b.path_to.reject! {|g| g == n }
+				play_mode_set(b,"robin") if b.path_to.length <= 1
+			end
+		end
+		CC.nouspoints.find_all {|f| !f.path_from.length.zero? && f.selected == true}.each {|n| n.path_from = []}
 		UI::canvas.queue_draw
 	end
 	
@@ -461,7 +463,7 @@ class Point_Logic
 		CC.nouspoints.find_all(&:selected).each do |n| 
 			if n.traveler_start == false
 				n.traveler_start = true
-				n.note = CC.root_note
+				n.note = CC.root_note if note.to_s.match(/^([+]|-)[0-9]{1,2}$/)
 			elsif n.traveler_start == true
 				n.traveler_start = false
 			end 
@@ -538,8 +540,6 @@ class NousPoint
 		file.write("#{@path_to_rels}<~>")
 		file.write("#{@path_from_rels}")
 	end
-	def read_props(file)
-	end
 	
 	def not_selected
 		!@selected
@@ -588,6 +588,16 @@ class NousPoint
 		@color = c
 		@default_color = c
 	end
+	def set_path_color
+		case @play_modes[0]
+		when "robin","split"
+			@path_color = CYAN
+		when "portal"
+			@path_color = RED
+		when "random"
+			@path_color = VLET
+		end
+	end
 	def set_destination(diff) #sets a new origin for the point based on x,y coordinate differences
 		@x += diff[0]
 		@y += diff[1]
@@ -602,7 +612,12 @@ class NousPoint
 		@color = @default_color
 	end
 	
-	def draw(cr)                     #point will always be drawn to this specification.
+	def draw(cr) #point will always be drawn to this specification.
+		
+		set_path_color
+		path_draw(cr)
+		caret_draw(cr)
+		
 		cr.set_source_rgba(@color[0],@color[1],@color[2],0.4)
 		if @traveler_start
 			traveler_start_draw(cr)
@@ -614,7 +629,6 @@ class NousPoint
 		cr.set_source_rgba(@color[0],@color[1],@color[2],1)
 		case @play_modes[0]
 		when "robin"
-			@path_color = CYAN
 			if @path_to.length > 1
 				cr.move_to(@x-8,@y)
 				cr.line_to(@x+6,@y-9)
@@ -631,7 +645,6 @@ class NousPoint
 				cr.fill
 			end
 		when "split"
-			@path_color = CYAN
 			cr.move_to(@x-8,@y)
 			cr.line_to(@x+6,@y-9)
 			cr.move_to(@x-8,@y)
@@ -639,12 +652,10 @@ class NousPoint
 			cr.set_line_width(2)
 			cr.stroke
 		when "portal"
-			@path_color = RED
 			cr.circle(@x,@y,6)
 			cr.set_line_width(2)
 			cr.stroke
 		when "random"
-			@path_color = VLET
 			cr.rectangle(@x-6,@y-2,8,8)
 			cr.rectangle(@x-2,@y-6,8,8)
 			cr.set_line_width(2)

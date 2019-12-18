@@ -233,7 +233,7 @@ class Canvas_Control
 		UI::canvas.queue_draw
 	end
 	
-	def canvas_press(event)
+	def canvas_press(obj,event)
 		UI::logic_controls.focus = true
 		case Active_Tool.tool_id
 			when 1
@@ -246,6 +246,7 @@ class Canvas_Control
 			when 4
 				@path_origin = [event.x,event.y]
 		end
+		obj.queue_draw
 	end
 	def canvas_drag(obj,event)
 		@dragging = false
@@ -292,10 +293,6 @@ class Canvas_Control
 				@nouspoints, @path_sourced = Pl.select_path_point(@path_origin,@nouspoints,@path_sourced)
 		end
 		obj.queue_draw
-	end
-	
-	def canvas_del
-		@nouspoints = Pl.delete_points(@nouspoints)
 	end
 	
 	def canvas_bg_draw(cr)
@@ -375,12 +372,8 @@ class Canvas_Control
 		end
 	
 		#Draw all the points and paths last
-		#Paths are behind points, so draw them first
-		@nouspoints.each        { |n| n.path_draw(cr) }
-		@nouspoints.each        { |n| n.caret_draw(cr)}
 		@nouspoints.each        { |n| n.draw(cr) }
 		
-
 	end
 end
 
