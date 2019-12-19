@@ -182,6 +182,7 @@ Q            -- Select Tool - Box select or single select points
 W            -- Point Place Tool - Places a point
 E            -- Move Tool - moves selected points based on a stencil
 R            -- Path Tool - Select source point, select target points, push build path or hit 'T'
+M            -- Toggle mute on selected points
 &lt; and &gt;      -- Cycle Play Mode - between robin, portal (random, split, if more than one path is leaving a point)
 , and .      -- Cycle starting path if more than one path is leaving a point
 + and -      -- add or subtract 1 from the currently selected points' note

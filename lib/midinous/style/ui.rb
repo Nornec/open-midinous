@@ -34,7 +34,8 @@ class GtkCanvas < Gtk::DrawingArea
 	def initialize
 		super()
 	end
-	define_signal('delete-selected-event',nil,nil,nil)
+	define_signal('delete-selected',nil,nil,nil)
+	define_signal('mute-toggle',nil,nil,nil)
 	define_signal('beat-up',nil,nil,nil)
 	define_signal('beat-dn',nil,nil,nil)
 	define_signal('beat-note-up',nil,nil,nil)
@@ -629,6 +630,7 @@ class UI_Elements
 		
 		operator = @current_file.sub("file:///","")
 		operator = operator.gsub("/","\\")
+		operator = operator.gsub("%20"," ")
 
 		IO.binwrite(operator, "")
 		save = File.open(operator, "a")
