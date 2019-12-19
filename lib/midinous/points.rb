@@ -29,6 +29,7 @@ class Point_Logic
 										  	 "Color",
 										  	 "Path Mode",
 										  	 "Signal Start",
+												 "Mute",
 										  	 "Play Mode"]
 		@prop_names_multi = ["Note",
 		                     "Velocity",
@@ -37,6 +38,7 @@ class Point_Logic
 												 "Repeat",
 												 "Color",
 												 "Signal Start",
+												 "Mute",
 												 "Play Mode"]
 		@prop_names_adv = []
 		@prop_names_adv_multi = []
@@ -190,6 +192,7 @@ class Point_Logic
 									 color_to_hex(point.default_color),
 									 point.path_mode,
 									 point.traveler_start,
+									 point.mute,
 									 point.play_modes[0]]
 			@prop_names.each	do |v|
 				iter = UI::prop_list_model.append
@@ -214,6 +217,8 @@ class Point_Logic
 					points.find_all(&:selected).each {|p| equalizer << color_to_hex(p.default_color)}
 				when "Signal Start"
 					points.find_all(&:selected).each {|p| equalizer << p.traveler_start}
+				when "Mute"
+					points.find_all(&:selected).each {|p| equalizer << p.mute}
 				when "Play Mode"
 					points.find_all(&:selected).each {|p| equalizer << p.play_modes[0]}
 				when "Repeat"
@@ -283,7 +288,7 @@ class Point_Logic
 						 UI::prop_mod_button.sensitive = true
 				else UI::prop_mod_button.sensitive = false
 				end
-			when "Signal Start"
+			when "Signal Start","Mute"
 				if signal_states.include? text
 					   UI::prop_mod_button.sensitive = true
 				else UI::prop_mod_button.sensitive = false
@@ -341,6 +346,13 @@ class Point_Logic
 					points.find_all(&:selected).each {|p| p.traveler_start = true}
 				when "false"
 					points.find_all(&:selected).each {|p| p.traveler_start = false}
+				end
+			when "Mute"
+				case UI::prop_mod.text
+				when "true"
+					points.find_all(&:selected).each {|p| p.mute = true}
+				when "false"
+					points.find_all(&:selected).each {|p| p.mute = false}
 				end
 			when "Play Mode"
 				if UI::prop_mod.text == "robin" || UI::prop_mod.text == "portal"
@@ -415,6 +427,17 @@ class Point_Logic
 		return points, false
 	end
 	
+	def mute_points
+		CC.nouspoints.find_all(&:selected).each do |n| 
+			case n.mute
+			when true
+				n.mute = false
+			when false
+				n.mute = true
+			end
+			UI::canvas.queue_draw
+		end
+	end
 	def delete_points
 		delete_paths_to
 		delete_paths_from
@@ -463,7 +486,7 @@ class Point_Logic
 		CC.nouspoints.find_all(&:selected).each do |n| 
 			if n.traveler_start == false
 				n.traveler_start = true
-				n.note = CC.root_note if note.to_s.match(/^([+]|-)[0-9]{1,2}$/)
+				n.note = CC.root_note if n.note.to_s.match(/^([+]|-)[0-9]{1,2}$/)
 			elsif n.traveler_start == true
 				n.traveler_start = false
 			end 
@@ -479,11 +502,11 @@ class NousPoint
 	attr_accessor :source, :color, :path_to, :path_from, :note, :x, :y,
 	              :velocity, :duration, :default_color, :path_mode, 
 								:traveler_start, :channel, :playing, :play_modes,
-								:path_to_memory, :repeat, :repeating,
+								:path_to_memory, :repeat, :repeating, :mute,
 								:use_rel, :selected, :save_id, :path_to_rels, :path_from_rels
 	attr_reader   :pathable, :origin, :bounds
 
-	def initialize(o,save_id) #where the point was initially placed
+	def initialize(o,save_id) #where the point was initially placed, and a unique identifier
 		@dp = [4,8,10,12,14,16,20]
 		
 		@x = o[0]
@@ -493,11 +516,11 @@ class NousPoint
 		@color           = GREY #point color defaults to gray++
 		@path_color      = CYAN
 		@default_color   = GREY
-		@note            = 60                         #all notes start at middle c (C3), can be a note or a reference
-		@velocity        = 100		                    #       ``       with 100 velocity
-		@channel         = 1                          #       ``       assigned to midi channel 1 (instrument 1, but we will refer to them as channels, not instruments)
-		@duration        = 1                          #length of note in grid points (should be considered beats)
-		@repeat          = 0                          #Number of times the node should repeat before moving on
+		@note            = 60    #all notes start at middle c (C3), can be a note or a reference
+		@velocity        = 100   #       ``       with 100 velocity
+		@channel         = 1     #       ``       assigned to midi channel 1 (instrument 1, but we will refer to them as channels, not instruments)
+		@duration        = 1     #length of note in grid points (should be considered beats)
+		@repeat          = 0     #Number of times the node should repeat before moving on
 		@save_id         = save_id
 		@play_modes      = ["robin","split","portal","random"]
 		@traveler_start  = false
@@ -507,6 +530,7 @@ class NousPoint
 		@source          = false
 		@repeating       = false
 		@use_rel         = false
+		@mute            = false
 		@path_to         = [] #array of references to points that are receiving a path from this point
 		@path_to_memory  = [] #memory of @path_to so that it can be reset upon stopping.
 		@path_to_rels    = []
@@ -614,15 +638,12 @@ class NousPoint
 	
 	def draw(cr) #point will always be drawn to this specification.
 		
-		set_path_color
-		path_draw(cr)
-		caret_draw(cr)
-		
 		cr.set_source_rgba(@color[0],@color[1],@color[2],0.4)
+		
 		if @traveler_start
 			traveler_start_draw(cr)
 		else
-			cr.rounded_rectangle(@x-@dp[1],@y-@dp[1],@dp[5],@dp[5],2,2) #slightly smaller rectangle adds 'relief' effect
+		  cr.rounded_rectangle(@x-@dp[1],@y-@dp[1],@dp[5],@dp[5],2,2) #slightly smaller rectangle adds 'relief' effect
 		end
 		cr.fill
 		
@@ -663,7 +684,6 @@ class NousPoint
 		end
 		
 		if @repeat > 0
-			#cr.move_to(@x-@dp[2],@y-@dp[2]) #top left of the point graphic
 			if @traveler_start
 				cr.move_to(@x+3,@y-@dp[2]-2)
 				cr.line_to(@x-2,-6+@y-@dp[2]-2)
@@ -689,6 +709,7 @@ class NousPoint
 			end
 		end
 		
+		cr.set_dash([2,4],0) if @mute
 		if !@selected
 			if @traveler_start
 				traveler_start_draw(cr)
@@ -707,6 +728,7 @@ class NousPoint
 		end
 		cr.set_line_width(2)
 		cr.stroke
+		cr.set_dash([],0)
 		play_draw(cr) if @playing
 		repeat_draw(cr) if @repeating
 	end
@@ -959,7 +981,7 @@ class Traveler #A traveler handles the source note playing and creates another t
 	def play_note
 		queued_notes = []
 		CC.queued_note_plays.each {|q| queued_notes << [q.note,q.chan]}		
-		CC.queued_note_plays << NoteSender.new(@played_note,@dest.channel,@dest.velocity) unless queued_notes.find {|f| @played_note == f[0] && @dest.channel == f[1]}
+		CC.queued_note_plays << NoteSender.new(@played_note,@dest.channel,@dest.velocity,@dest.mute) unless queued_notes.find {|f| @played_note == f[0] && @dest.channel == f[1]}
 	end
 	def play_relative
 		#search the current scales variable and round to nearest note.
@@ -987,7 +1009,7 @@ class Traveler #A traveler handles the source note playing and creates another t
 	end
 	
 	def queue_removal
-		CC.queued_note_stops << NoteSender.new(@played_note,@dest.channel,0)
+		CC.queued_note_stops << NoteSender.new(@played_note,@dest.channel,0,@dest.mute)
 
 		@remove = true
 	end
@@ -1019,7 +1041,7 @@ class Starter #A starter handles notes that are used as starting points for path
 		@travel_c += 1
 		if @travel_c == @duration
 			@srce.playing = false
-			CC.queued_note_stops << NoteSender.new(@played_note,@srce.channel,0)
+			CC.queued_note_stops << NoteSender.new(@played_note,@srce.channel,0,@srce.mute)
 			CC.repeaters << Repeater.new(@srce,@repeat,@played_note) if @repeat > 0
 			@remove = true
 		end
@@ -1040,7 +1062,7 @@ class Starter #A starter handles notes that are used as starting points for path
 	def play_note
 		queued_notes = []
 		CC.queued_note_plays.each {|q| queued_notes << [q.note,q.chan]}
-		CC.queued_note_plays << NoteSender.new(@played_note,@srce.channel,@srce.velocity) unless queued_notes.find {|f| @played_note == f[0] && @srce.channel == f[1]}
+		CC.queued_note_plays << NoteSender.new(@played_note,@srce.channel,@srce.velocity,@srce.mute) unless queued_notes.find {|f| @played_note == f[0] && @srce.channel == f[1]}
 	end
 	def play_relative
 		#search the current scales variable and round to nearest note.
@@ -1080,7 +1102,7 @@ class Repeater #A repeater handles notes that are set to repeat/arpeggiate. This
 	
 	def repeat
 		if @timer == 0
-			CC.queued_note_stops << NoteSender.new(@played_note,@srce.channel,0)
+			CC.queued_note_stops << NoteSender.new(@played_note,@srce.channel,0,@srce.mute)
 			@srce.repeating = false
 			@remove = true
 		end
@@ -1094,7 +1116,7 @@ class Repeater #A repeater handles notes that are set to repeat/arpeggiate. This
 	def play_note
 		queued_notes = []
 		CC.queued_note_plays.each {|q| queued_notes << [q.note,q.chan]}
-		CC.queued_note_plays << NoteSender.new(@played_note,@srce.channel,@srce.velocity) unless queued_notes.find {|f| @played_note == f[0] && @srce.channel == f[1]}
+		CC.queued_note_plays << NoteSender.new(@played_note,@srce.channel,@srce.velocity,@srce.mute) unless queued_notes.find {|f| @played_note == f[0] && @srce.channel == f[1]}
 	end
 	
 end

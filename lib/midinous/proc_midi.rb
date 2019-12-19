@@ -101,17 +101,18 @@ end
 
 class NoteSender
 	attr_reader :note, :chan, :vel
-	def initialize(note,chan,vel)
+	def initialize(note,chan,vel,mute)
 		@note = note
 		@chan = chan
 		@vel  = vel
+		@mute = mute
 	end
 	
 	def play
-		Pm.note_send(@chan,@note,@vel)
+		Pm.note_send(@chan,@note,@vel) unless @mute
 	end
 	def stop
-		Pm.note_rlse(@chan,@note)
+		Pm.note_rlse(@chan,@note) unless @mute
 	end
 
 end

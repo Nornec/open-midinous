@@ -29,7 +29,9 @@ module Key_Bindings
 				when 114, 112   # R or P (colemak)
 					UI::main_tool_4.signal_emit("keybinding-event") if CC.dragging == false
 				when 65535      # del
-					UI::canvas.signal_emit("delete-selected-event")
+					UI::canvas.signal_emit("delete-selected")
+				when 109        # M
+				  UI::canvas.signal_emit("mute-toggle")
 				when 116        # T
 					UI::path_builder.signal_emit("keybinding-event")
 				when 93         # ]

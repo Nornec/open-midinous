@@ -372,6 +372,9 @@ class Canvas_Control
 		end
 	
 		#Draw all the points and paths last
+		@nouspoints.each        { |n| n.set_path_color }
+		@nouspoints.each        { |n| n.path_draw(cr) }
+		@nouspoints.each        { |n| n.caret_draw(cr) }
 		@nouspoints.each        { |n| n.draw(cr) }
 		
 	end
