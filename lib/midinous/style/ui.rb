@@ -688,8 +688,9 @@ class UI_Elements
 					n.traveler_start = eval(point_line[9])
 					n.use_rel        = eval(point_line[10])
 					n.path_mode      = point_line[11]
-					n.path_to_rels   = eval(point_line[12])
-					n.path_from_rels = eval(point_line[13])
+					n.mute           = eval(point_line[12])
+					n.path_to_rels   = eval(point_line[13])
+					n.path_from_rels = eval(point_line[14])
 					n.path_to_rels.each   {|ptr| n.path_to   << CC.nouspoints.find {|f| ptr == f.save_id}}
 					n.path_from_rels.each {|pfr| n.path_from << CC.nouspoints.find {|f| pfr == f.save_id}}
 				end
