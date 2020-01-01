@@ -561,6 +561,7 @@ class NousPoint
 		file.write("#{@traveler_start}<~>")                       
 		file.write("#{@use_rel}<~>")               
 		file.write("#{@path_mode}<~>")
+		file.write("#{@mute}<~>")
 		file.write("#{@path_to_rels}<~>")
 		file.write("#{@path_from_rels}")
 	end
