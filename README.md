@@ -1,6 +1,6 @@
-# Midinous: Grid-based Generative Midi Software
+# Open Midinous: Grid-based Generative MIDI Software, written in Ruby
 
-Midinous combines generative features with a grid-based GUI to offer a supplemental and unique compositional experience
+Open Midinous combines generative features with a grid-based GUI to offer a supplemental and unique compositional experience
 
 ## Requirements
 
