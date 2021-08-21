@@ -1,3 +1,6 @@
+## Please note, if you are looking for the .NET version of this program, go to https://midinous.com . I am no longer maintaining this repository, as my efforts have fully shifted to the .NET version. Thank you for your interest!
+
+
 # Open Midinous: Grid-based Generative MIDI Software, written in Ruby
 
 Open Midinous combines generative features with a grid-based GUI to offer a supplemental and unique compositional experience
@@ -5,7 +8,7 @@ Open Midinous combines generative features with a grid-based GUI to offer a supp
 ## Requirements
 
 * [GTK3](http://www.gtk.org/) 3.3.6 or later (installed as dependency automatically)
-* Midinous is designed to run on 64-bit architectures
+* Open Midinous is designed to run on 64-bit architectures
 * You must have 64-bit Ruby version 2.5.0 - 2.5.5 installed with the devkit and MSYS2
 * It is recommended you use a virtual MIDI cable program for use of Midinous on Windows
 
@@ -34,12 +37,14 @@ the Free Software Foundation, either version 3 of the License, or
 
 ## Project Websites
 
-* https://github.com/Nornec/Midinous
+* https://midinous.com
 * https://nornec.bandcamp.com
-* https://youtube.com/nornec
+* https://www.youtube.com/channel/UCVUr0uNVwrfvl3IKF-f7bwQ (Midinous .NET Version YouTube Channel)
+* https://youtube.com/nornec (Artist channel)
 * https://rubygems.org/gems/midinous
+* https://github.com/Nornec/Midinous
 
 ## Donate
 
-* If you enjoy Midinous, please consider donating by purchasing my music (name your price):
+* If you enjoy Open Midinous, please consider donating by purchasing my music (name your price):
     * https://nornec.bandcamp.com
