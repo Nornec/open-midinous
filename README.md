@@ -24,12 +24,14 @@ Open Midinous combines generative features with a grid-based GUI to offer a supp
 
 ## License
 
-Copyright (C) 2019 James "Nornec" Ratliff
+Copyright (C) 2024 Jae "Nornec" Rin
 
 Midinous is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
+
+Please note that MIDINOUS and the MN logo are registered trademarks of Jae "Nornec" Rin.
 
 ## Join the Discord!
 
